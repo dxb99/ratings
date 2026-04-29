@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DXB99 Player Ratings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-locked">
+
+<div id="loadingScreen">
+  <div class="loaderLogo">DXB<span>99</span></div>
+  <div class="loadingText">LOADING<span class="dots"></span></div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="brand">
+      <img src="DXB99.MATCHUP.png" alt="DXB99">
+      <div>
+        <h1>PLAYER RATINGS</h1>
+        <p>Rate every player across six gameplay categories.</p>
+      </div>
+    </div>
+
+    <div id="adminBar">
+      <span id="adminStatus">LOCKED</span>
+      <button id="adminLockBtn" class="btn btn-dark" style="display:none;">LOCK</button>
+    </div>
+  </header>
+
+  <main id="ratingsLayout">
+    <section class="ratingsHeaderRow">
+      <div class="ratingsTitleBlock">
+        <div class="ratingsKicker"><span class="ratingsTitleStar">★</span> PLAYER RATINGS</div>
+        <p>Rate all players using six overall gameplay categories. You can submit your ratings once every voting cycle.</p>
+      </div>
+
+      <div id="ratingsStatusCard" class="ratingsStatusCard">
+        <div class="ratingsStatusLabel">Voting status</div>
+        <div id="ratingsStatusText" class="ratingsStatusText">Checking status</div>
+        <div id="ratingsStatusDate" class="ratingsStatusDate">Please wait.</div>
+      </div>
+    </section>
+
+    <section class="ratingsRaterCard">
+      <div class="ratingsRaterIcon">USER</div>
+      <div class="ratingsRaterFields">
+        <label for="ratingsRaterSelect">YOUR NAME (RATER)</label>
+        <select id="ratingsRaterSelect"></select>
+        <div class="ratingsHelpText">This name will be recorded with your ratings.</div>
+
+        <div class="ratingsCodeGrid">
+          <div>
+            <label for="ratingsEmailInput">EMAIL</label>
+            <input id="ratingsEmailInput" class="ratingsTextInput" type="email" placeholder="name@example.com">
+          </div>
+
+          <button id="requestRatingCodeBtn" class="btn btn-blue">REQUEST CODE</button>
+
+          <div>
+            <label for="ratingsCodeInput">CODE</label>
+            <input id="ratingsCodeInput" class="ratingsTextInput" type="text" inputmode="numeric" maxlength="6" placeholder="Enter code">
+          </div>
+        </div>
+
+        <div id="ratingsCodeStatus" class="ratingsHelpText">Voting codes are valid for 1 hour.</div>
+      </div>
+    </section>
+
+    <section class="ratingsAdminCard">
+      <div>
+        <div class="ratingsAdminTitle">Admin controls</div>
+        <div class="ratingsHelpText">Setup sheets, apply finished ratings, or manage active players.</div>
+      </div>
+      <div class="ratingsAdminActions">
+        <button id="setupRatingSheetsBtn" class="btn btn-green">SETUP SHEETS</button>
+        <button id="manualVotingToggleBtn" class="btn btn-blue">UNLOCK VOTING</button>
+        <button id="applyRatingsBtn" class="btn btn-orange">APPLY RATINGS</button>
+        <button id="ratingsAddPlayerBtn" class="btn btn-blue">ADD PLAYER</button>
+        <button id="ratingsRemovePlayerBtn" class="btn btn-red">REMOVE PLAYER</button>
+      </div>
+    </section>
+
+    <section class="ratingsInfoBar">
+      <div class="ratingsInfoMain">
+        <button id="ratingsInfoBtn" class="ratingsInfoIcon" type="button">i</button>
+        <span>Rate each player across six gameplay categories. Untouched sliders must be completed before submitting.</span>
+        <div id="ratingsInfoTooltip" class="ratingsInfoTooltip">
+          <div class="ratingsInfoPanel">
+            <div class="ratingsInfoPanelTop">
+              <div class="ratingsInfoPanelTitle">How Ratings Work</div>
+              <button id="ratingsInfoCloseBtn" class="ratingsInfoIcon ratingsInfoCloseBtn" type="button">x</button>
+            </div>
+            <p>Each voting cycle starts fresh. Old votes from previous cycles are not reused.</p>
+            <p>Each player is rated in six categories: <strong>Combat Skills</strong>, <strong>Communication / Status Updates</strong>, <strong>Decision Making</strong>, <strong>Map Awareness</strong>, <strong>Movement / Speed</strong>, and <strong>Team Impact</strong>.</p>
+            <div class="ratingsInfoExample">Low = 0 | Fair = 2.5 | Average = 5 | Good = 7.5 | Excellent = 10</div>
+            <p>Untouched sliders are not counted. Every category must be rated before submitting.</p>
+            <p>The system averages the six category scores for each player. That decimal number becomes the player's overall skill level used by the matchup generator.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ratingsScaleText">Low | Fair | Average | Good | Excellent</div>
+    </section>
+
+    <section class="ratingsTableShell">
+      <div class="ratingsTableHeader">
+        <div>PLAYER</div>
+        <div class="ratingsCategoryHeader">OVERALL CATEGORIES <span>Low to Excellent</span></div>
+      </div>
+      <div id="ratingsRows"></div>
+    </section>
+
+    <section class="ratingsFooterRow">
+      <div class="ratingsVoteCard">
+        <div class="ratingsVoteIcon">
+          <img src="DXB99.MATCHUP.png" alt="DXB99">
+        </div>
+        <div>
+          <div class="ratingsVoteTitle">YOUR VOTE MATTERS</div>
+          <div class="ratingsHelpText">These ratings help balance teams and improve the overall experience for everyone.</div>
+        </div>
+      </div>
+
+      <div class="ratingsSubmitWrap">
+        <button id="submitRatingsBtn" class="ratingsSubmitBtn">
+          <span class="ratingsSubmitIcon">✓</span>
+          <span>SUBMIT RATINGS</span>
+        </button>
+        <div class="ratingsSubmitNote">Make sure every category is rated before submitting.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="busyOverlay">
+  <div class="busyBox">
+    <div class="spinner"></div>
+    <div id="busyText">LOADING<span class="dots"></span></div>
+  </div>
+</div>
+
+<div id="customModal" class="modalOverlay">
+  <div class="modalBox">
+    <div id="modalMessage" class="modalMessage"></div>
+    <input id="modalInput" class="modalInput" type="password" placeholder="Enter password">
+    <div class="modalButtons">
+      <button id="modalCancel" class="btn btn-red modalIconBtn">x</button>
+      <button id="modalConfirm" class="btn btn-green modalIconBtn">✓</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
