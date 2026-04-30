@@ -1,12 +1,10 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyOfQRKh_tj5sdISprAbO2GsS2dyjIE3u37woE2wjzORhWcenHi_FuKyUa20rKD0GpaZQ/exec";
-const APP_TIME_ZONE = "Asia/Dubai";
-const APP_TIME_ZONE_LABEL = "GST";
 const API_TIMEOUT_MS = 30000;
 
 let allPlayers = [];
-let currentRatingStatus = null;
+let latestResults = {};
 
-const RATING_SCALE_OPTIONS = [
+const scaleOptions = [
   { label: "Low", value: 0 },
   { label: "Fair", value: 2.5 },
   { label: "Average", value: 5 },
@@ -14,66 +12,62 @@ const RATING_SCALE_OPTIONS = [
   { label: "Excellent", value: 10 }
 ];
 
-const RATING_CATEGORIES = [
+const version3Categories = [
   {
     key: "combat",
     label: "Combat Skills",
     tip: "Aim, weapon control, ammo use, and winning fights.",
-    theme: "green"
+    theme: "combat"
   },
   {
-    key: "comms",
+    key: "communication",
     label: "Communication / Status Updates",
     tip: "Clear, useful updates without cluttering comms.",
-    theme: "purple"
+    theme: "communication"
   },
   {
-    key: "objective",
+    key: "decision",
     label: "Decision Making",
     tip: "Smart choices on when to attack, defend, rotate, or support.",
-    theme: "gold"
+    theme: "decision"
   },
   {
     key: "awareness",
     label: "Map Awareness",
     tip: "Knowledge of routes, pickups, player positions, and pressure.",
-    theme: "blue"
+    theme: "awareness"
   },
   {
     key: "movement",
     label: "Movement / Speed",
     tip: "Dodging, wall runs, chasing, escaping, and reaching key areas quickly.",
-    theme: "green"
+    theme: "movement"
   },
   {
     key: "impact",
     label: "Team Impact",
     tip: "Overall contribution to team control, momentum, and wins.",
-    theme: "purple"
+    theme: "impact"
   }
-];
+].sort((a, b) => a.label.localeCompare(b.label));
 
 window.addEventListener("load", async () => {
-  sessionStorage.removeItem("adminPass");
-
   try{
-    setupRatingsTab();
-    await loadPlayers();
-    await refreshRatingStatus();
-    updateAdminBar();
-
-    document.getElementById("adminLockBtn").onclick = clearAdminSession;
+    setupTabs();
+    setupButtons();
+    await loadInitialData();
     document.getElementById("loadingScreen").style.display = "none";
     document.getElementById("app").classList.remove("hidden");
   }catch(err){
     console.error(err);
-    await showModal("Startup error. Open console (F12).", "alert");
+    document.getElementById("loadingScreen").style.display = "none";
+    await showModal("Startup error. Open console for details.", "alert");
   }
 });
 
 async function api(data){
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try{
     const res = await fetch(API_URL, {
@@ -84,797 +78,477 @@ async function api(data){
 
     return await res.json();
   }finally{
-    clearTimeout(timeout);
+    clearTimeout(timer);
   }
 }
 
-function escapeModalText(value){
-  return value
-    .toString()
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function showBusy(text = "WORKING"){
+  const overlay = document.getElementById("busyOverlay");
+  const busyText = document.getElementById("busyText");
+  busyText.innerHTML = `${text}<span class="dots"></span>`;
+  overlay.style.display = "flex";
 }
 
-function setModalMessage(element, message){
-  const text = (message || "").toString();
-
-  if(text.startsWith("⚠")){
-    element.innerHTML = `<span class="modalWarningIcon">⚠</span>${escapeModalText(text.slice(1).trim())}`;
-    return;
-  }
-
-  element.textContent = text;
+function hideBusy(){
+  document.getElementById("busyOverlay").style.display = "none";
 }
 
-function showModal(message, type = "alert", confirmText = "Confirm", cancelText = "Cancel", withInput = false, inputType = "password", inputPlaceholder = "Enter password"){
+function showModal(message, type = "alert"){
   return new Promise(resolve => {
     const modal = document.getElementById("customModal");
     const msg = document.getElementById("modalMessage");
     const confirmBtn = document.getElementById("modalConfirm");
     const cancelBtn = document.getElementById("modalCancel");
-    const input = document.getElementById("modalInput");
 
-    setModalMessage(msg, message);
-    confirmBtn.innerHTML = confirmText === "Confirm" ? "✓" : confirmText;
-    cancelBtn.innerHTML = cancelText === "Cancel" ? "x" : cancelText;
-
-    input.style.display = withInput ? "block" : "none";
-    input.type = inputType;
-    input.placeholder = inputPlaceholder;
-    input.value = "";
-
-    modal.style.display = "flex";
+    msg.textContent = message;
     cancelBtn.style.display = type === "alert" ? "none" : "inline-flex";
+    modal.style.display = "flex";
 
-    const cleanup = () => {
+    const cleanup = value => {
       modal.style.display = "none";
       confirmBtn.onclick = null;
       cancelBtn.onclick = null;
-    };
-
-    confirmBtn.onclick = () => {
-      const value = withInput ? input.value : true;
-      cleanup();
       resolve(value);
     };
 
-    cancelBtn.onclick = () => {
-      cleanup();
-      resolve(null);
-    };
+    confirmBtn.onclick = () => cleanup(true);
+    cancelBtn.onclick = () => cleanup(null);
   });
 }
 
-function showBusy(text = "LOADING"){
-  const overlay = document.getElementById("busyOverlay");
-  const label = document.getElementById("busyText");
-
-  if(label) label.innerHTML = `${text}<span class="dots"></span>`;
-  if(overlay) overlay.style.display = "flex";
+function setupTabs(){
+  document.querySelectorAll("[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => showTab(btn.dataset.tab));
+  });
 }
 
-function hideBusy(){
-  const overlay = document.getElementById("busyOverlay");
-  if(overlay) overlay.style.display = "none";
-}
+function showTab(tabId){
+  document.querySelectorAll(".tabContent").forEach(tab => {
+    tab.classList.toggle("active", tab.id === tabId);
+  });
 
-async function getAdminPassword(){
-  const stored = sessionStorage.getItem("adminPass");
-  if(stored) return stored;
+  document.querySelectorAll(".tabButton").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabId);
+  });
 
-  while(true){
-    const pass = await showModal("Enter Admin Password", "confirm", "Confirm", "Cancel", true);
-    if(!pass) return null;
+  window.scrollTo({ top: 0, behavior: "instant" });
 
-    const test = await api({
-      action: "verifyAdminPassword",
-      password: pass
-    });
-
-    if(test && test.ok){
-      sessionStorage.setItem("adminPass", pass);
-      updateAdminBar();
-      return pass;
-    }
-
-    await showModal("Wrong password. Try again.", "alert");
+  if(tabId === "resultsTab"){
+    renderResults();
   }
 }
 
-function clearAdminSession(){
-  sessionStorage.removeItem("adminPass");
-  updateAdminBar();
-}
+function setupButtons(){
+  document.getElementById("submitVersion1Btn").onclick = () => submitVersion(1);
+  document.getElementById("submitVersion2Btn").onclick = () => submitVersion(2);
+  document.getElementById("submitVersion3Btn").onclick = () => submitVersion(3);
+  document.getElementById("refreshResultsBtn").onclick = refreshResults;
 
-function isAdminUnlocked(){
-  return !!sessionStorage.getItem("adminPass");
-}
-
-function updateAdminBar(){
-  const status = document.getElementById("adminStatus");
-  const lockBtn = document.getElementById("adminLockBtn");
-  const pass = sessionStorage.getItem("adminPass");
-
-  if(!status || !lockBtn) return;
-
-  if(pass){
-    status.textContent = "ADMIN MODE ACTIVE";
-    lockBtn.style.display = "inline-flex";
-    document.body.classList.remove("admin-locked");
-    document.body.classList.add("admin-unlocked");
-  }else{
-    status.textContent = "LOCKED";
-    lockBtn.style.display = "none";
-    document.body.classList.remove("admin-unlocked");
-    document.body.classList.add("admin-locked");
-  }
-
-  status.onclick = async () => {
-    if(isAdminUnlocked()) return;
-    await getAdminPassword();
-  };
-}
-
-async function loadPlayers(){
-  const data = await api({ action: "getInitialData" });
-
-  if(!data || !data.ok){
-    throw new Error("Failed loading players");
-  }
-
-  allPlayers = data.players || [];
-  renderRatingsPreview();
-}
-
-function setupRatingsTab(){
-  document.getElementById("submitRatingsBtn").onclick = submitRatings;
-  document.getElementById("requestRatingCodeBtn").onclick = requestRatingCode;
-  document.getElementById("setupRatingSheetsBtn").onclick = setupRatingSheets;
-  document.getElementById("manualVotingToggleBtn").onclick = toggleManualVotingWindow;
-  document.getElementById("applyRatingsBtn").onclick = applyRatingsToPlayers;
-  document.getElementById("ratingsAddPlayerBtn").onclick = addRatingsPlayer;
-  document.getElementById("ratingsRemovePlayerBtn").onclick = removeRatingsPlayer;
-
-  const infoBtn = document.getElementById("ratingsInfoBtn");
-  const infoTooltip = document.getElementById("ratingsInfoTooltip");
-  const infoCloseBtn = document.getElementById("ratingsInfoCloseBtn");
-  const raterSelect = document.getElementById("ratingsRaterSelect");
+  const infoBtn = document.getElementById("infoBtn");
+  const infoPanel = document.getElementById("infoPanel");
+  const closeBtn = document.getElementById("infoCloseBtn");
 
   infoBtn.onclick = e => {
     e.stopPropagation();
-    infoTooltip.classList.toggle("show");
+    infoPanel.classList.add("show");
   };
 
-  infoTooltip.onclick = e => {
-    if(e.target === infoTooltip) infoTooltip.classList.remove("show");
-  };
-
-  infoCloseBtn.onclick = e => {
+  closeBtn.onclick = e => {
     e.stopPropagation();
-    infoTooltip.classList.remove("show");
+    infoPanel.classList.remove("show");
   };
 
-  raterSelect.onchange = async () => {
-    renderRatingsPreview();
-    await refreshRatingStatus(raterSelect.value);
-  };
-}
-
-function formatRatingDate(dateValue){
-  if(!dateValue) return "";
-
-  const date = new Date(dateValue);
-  if(Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIME_ZONE,
-    month: "numeric",
-    day: "numeric",
-    year: "numeric"
-  }).format(date);
-}
-
-function formatRatingDateTime(dateValue, label = APP_TIME_ZONE_LABEL){
-  const dateText = formatRatingDate(dateValue);
-  return dateText ? `${dateText} ${label}` : "";
-}
-
-function formatBackendRatingStatus(status){
-  if(!status || !status.ok){
-    return {
-      isOpen: false,
-      title: "Voting status unavailable",
-      detail: "Refresh and try again."
-    };
-  }
-
-  const zoneLabel = status.timeZoneLabel || APP_TIME_ZONE_LABEL;
-  const openDate = formatRatingDateTime(status.opensAt, zoneLabel);
-  const closeDate = formatRatingDateTime(status.closesAt, zoneLabel);
-  const applyDate = formatRatingDateTime(status.appliesAt, zoneLabel);
-
-  if(status.manualOverride){
-    return {
-      isOpen: true,
-      title: "Manual voting is open",
-      detail: "Admin override is active until manually locked."
-    };
-  }
-
-  if(status.hasVoted){
-    return {
-      isOpen: status.isOpen,
-      title: "You already voted this cycle",
-      detail: applyDate ? `New ratings apply ${applyDate}.` : "Your vote has been recorded."
-    };
-  }
-
-  if(status.isOpen){
-    return {
-      isOpen: true,
-      title: "Voting is open",
-      detail: `Closes ${closeDate}. New ratings apply ${applyDate}.`
-    };
-  }
-
-  const days = Number(status.daysUntilOpen || 0);
-
-  return {
-    isOpen: false,
-    title: `Voting opens in ${days} ${days === 1 ? "day" : "days"}`,
-    detail: `${status.name || "Next voting"}: ${openDate} - ${closeDate}`
+  infoPanel.onclick = e => {
+    if(e.target === infoPanel) infoPanel.classList.remove("show");
   };
 }
 
-function formatRatingNumber(value){
-  if(value === "" || value === null || typeof value === "undefined") return "-";
+async function loadInitialData(){
+  showBusy("LOADING");
 
-  const numeric = Number(value);
-  if(Number.isNaN(numeric)) return "-";
-
-  return Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(1);
-}
-
-function updateManualVotingButton(){
-  const btn = document.getElementById("manualVotingToggleBtn");
-  if(!btn) return;
-
-  const manualOpen = currentRatingStatus && currentRatingStatus.manualOverride;
-
-  btn.textContent = manualOpen ? "LOCK VOTING" : "UNLOCK VOTING";
-  btn.classList.toggle("btn-orange", !!manualOpen);
-  btn.classList.toggle("btn-blue", !manualOpen);
-}
-
-function updateRatingsSubmitButton(isSubmitted = false){
-  const submitBtn = document.getElementById("submitRatingsBtn");
-  if(!submitBtn) return;
-
-  submitBtn.classList.toggle("ratingsSubmitBtnSubmitted", isSubmitted);
-  submitBtn.disabled = isSubmitted;
-  submitBtn.innerHTML = isSubmitted
-    ? `<span class="ratingsSubmitIcon">✓</span><span>RATINGS SUBMITTED</span>`
-    : `<span class="ratingsSubmitIcon">✓</span><span>SUBMIT RATINGS</span>`;
-}
-
-async function refreshRatingStatus(rater = ""){
   try{
-    const res = await api({
-      action: "getRatingStatus",
-      rater: rater
-    });
+    const data = await api({ action: "getInitialData" });
 
-    currentRatingStatus = res && res.ok ? res : null;
+    if(!data || !data.ok){
+      throw new Error((data && data.error) || "Failed loading ratings data");
+    }
+
+    allPlayers = data.players || [];
+    latestResults = data.results || {};
+    renderAllVersions();
+    renderResults();
+  }finally{
+    hideBusy();
+  }
+}
+
+async function refreshResults(){
+  showBusy("REFRESHING");
+
+  try{
+    const data = await api({ action: "getResults" });
+
+    if(!data || !data.ok){
+      throw new Error((data && data.error) || "Failed loading results");
+    }
+
+    latestResults = data.results || {};
+    renderResults();
   }catch(err){
-    currentRatingStatus = null;
-  }
-
-  renderRatingsPreview();
-  updateManualVotingButton();
-}
-
-function getRatingsCodeFormValues(){
-  return {
-    rater: document.getElementById("ratingsRaterSelect").value,
-    email: document.getElementById("ratingsEmailInput").value.trim(),
-    code: document.getElementById("ratingsCodeInput").value.trim()
-  };
-}
-
-async function requestRatingCode(){
-  const values = getRatingsCodeFormValues();
-  const statusEl = document.getElementById("ratingsCodeStatus");
-
-  if(!values.rater){
-    showModal("Select your name before requesting a code.", "alert");
-    return;
-  }
-
-  if(!values.email){
-    showModal("Enter your email address before requesting a code.", "alert");
-    return;
-  }
-
-  showBusy("REQUESTING CODE");
-
-  try{
-    const res = await api({
-      action: "requestRatingCode",
-      rater: values.rater,
-      email: values.email
-    });
-
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not request voting code.", "alert");
-      return;
-    }
-
-    statusEl.textContent = `Code sent to ${values.email}. It expires in 1 hour.`;
-    showModal("Voting code sent. Check your email.", "alert");
-  }catch(err){
-    showModal("Could not request voting code.", "alert");
+    await showModal(err.message || "Could not refresh results.", "alert");
   }finally{
     hideBusy();
   }
 }
 
-async function setupRatingSheets(){
-  const pass = await requireAdmin();
-  if(!pass) return;
+function renderAllVersions(){
+  populateRaterSelects();
+  renderVersion1Rows();
+  renderVersion2Rows();
+  renderVersion3Rows();
+}
 
-  showBusy("SETTING UP");
+function populateRaterSelects(){
+  document.querySelectorAll(".raterSelect").forEach(select => {
+    const currentValue = select.value;
+    select.innerHTML = "";
 
-  try{
-    const res = await api({
-      action: "setupRatingSheets",
-      password: pass
-    });
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select your name";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
 
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not setup rating sheets.", "alert");
-      return;
+    allPlayers
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(player => {
+        const option = document.createElement("option");
+        option.value = player.name;
+        option.textContent = player.name;
+        select.appendChild(option);
+      });
+
+    if(currentValue){
+      select.value = currentValue;
     }
-
-    showModal("Rating sheets are ready.", "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-async function requireAdmin(){
-  if(!isAdminUnlocked()){
-    const pass = await getAdminPassword();
-    return pass;
-  }
-
-  return getAdminPassword();
-}
-
-async function toggleManualVotingWindow(){
-  const pass = await requireAdmin();
-  if(!pass) return;
-
-  const manualOpen = currentRatingStatus && currentRatingStatus.manualOverride;
-  const enabled = !manualOpen;
-  const confirmed = await showModal(
-    enabled ? "Unlock voting until an admin manually locks it?" : "Lock manual voting now?",
-    "confirm"
-  );
-
-  if(!confirmed) return;
-
-  showBusy("UPDATING VOTING");
-
-  try{
-    const res = await api({
-      action: "setManualVotingWindow",
-      password: pass,
-      enabled: enabled
-    });
-
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not update manual voting.", "alert");
-      return;
-    }
-
-    await refreshRatingStatus(document.getElementById("ratingsRaterSelect").value || "");
-    showModal(enabled ? "Voting unlocked until manually locked." : "Manual voting locked.", "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-async function applyRatingsToPlayers(){
-  const confirmed = await showModal(
-    "Apply latest rating skills to the Players sheet? A backup will be created first.",
-    "confirm"
-  );
-
-  if(!confirmed) return;
-
-  const pass = await requireAdmin();
-  if(!pass) return;
-
-  showBusy("APPLYING");
-
-  try{
-    const res = await api({
-      action: "applyLatestRatingsToPlayers",
-      password: pass
-    });
-
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not apply ratings.", "alert");
-      return;
-    }
-
-    allPlayers = res.players || allPlayers;
-    renderRatingsPreview();
-
-    showModal(`Ratings applied. ${res.updatedCount || 0} players updated. Backup: ${res.backupSheet || "created"}.`, "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-async function addRatingsPlayer(){
-  const pass = await requireAdmin();
-  if(!pass) return;
-
-  const name = await showModal("Enter player name", "confirm", "Confirm", "Cancel", true, "text", "Player name");
-  if(!name) return;
-
-  const skillValue = await showModal("Enter starting skill number", "confirm", "Confirm", "Cancel", true, "number", "0-10");
-  if(skillValue === null) return;
-
-  const skill = parseFloat(skillValue);
-
-  if(Number.isNaN(skill)){
-    showModal("Skill must be a number.", "alert");
-    return;
-  }
-
-  showBusy("ADDING PLAYER");
-
-  try{
-    const res = await api({
-      action: "addRatingPlayer",
-      password: pass,
-      name: name,
-      skill: skill
-    });
-
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not add player.", "alert");
-      return;
-    }
-
-    allPlayers = res.players || allPlayers;
-    renderRatingsPreview();
-    showModal("Player added to ratings.", "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-async function removeRatingsPlayer(){
-  const pass = await requireAdmin();
-  if(!pass) return;
-
-  const name = await showModal("Enter player name to remove from active ratings", "confirm", "Confirm", "Cancel", true, "text", "Player name");
-  if(!name) return;
-
-  showBusy("REMOVING PLAYER");
-
-  try{
-    const res = await api({
-      action: "deactivateRatingPlayer",
-      password: pass,
-      name: name
-    });
-
-    if(!res || !res.ok){
-      showModal((res && res.error) || "Could not remove player.", "alert");
-      return;
-    }
-
-    allPlayers = res.players || allPlayers;
-    renderRatingsPreview();
-    showModal("Player removed from active ratings.", "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-function renderRatingsPreview(){
-  const raterSelect = document.getElementById("ratingsRaterSelect");
-  const rows = document.getElementById("ratingsRows");
-  const statusText = document.getElementById("ratingsStatusText");
-  const statusDate = document.getElementById("ratingsStatusDate");
-  const tableShell = document.querySelector(".ratingsTableShell");
-  const tableHeader = document.querySelector(".ratingsTableHeader");
-  const raterCard = document.querySelector(".ratingsRaterCard");
-  const submitWrap = document.querySelector(".ratingsSubmitWrap");
-
-  if(!raterSelect || !rows) return;
-
-  const players = Array.isArray(allPlayers) ? [...allPlayers] : [];
-  const status = formatBackendRatingStatus(currentRatingStatus);
-  const isVotingOpen = currentRatingStatus ? !!currentRatingStatus.isOpen : false;
-  const hasSubmittedRatings = !!(currentRatingStatus && currentRatingStatus.hasVoted);
-
-  statusText.textContent = status.title;
-  statusDate.textContent = status.detail;
-  tableShell.classList.toggle("ratingsReadOnlyMode", !isVotingOpen);
-  raterCard.style.display = isVotingOpen ? "" : "none";
-  submitWrap.style.display = isVotingOpen ? "" : "none";
-  updateRatingsSubmitButton(hasSubmittedRatings);
-
-  tableHeader.innerHTML = isVotingOpen
-    ? `<div>PLAYER</div><div class="ratingsCategoryHeader">OVERALL CATEGORIES <span>Low to Excellent</span></div>`
-    : `<div>PLAYER</div><div>CURRENT SKILL</div><div>CATEGORY AVERAGE</div><div>VOTES</div>`;
-
-  const selectedRater = raterSelect.value;
-
-  raterSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "Select your name";
-  placeholder.disabled = true;
-  placeholder.selected = true;
-  raterSelect.appendChild(placeholder);
-
-  players
-    .slice()
-    .sort((a,b) => a.name.localeCompare(b.name))
-    .forEach(player => {
-      const option = document.createElement("option");
-      option.value = player.name;
-      option.textContent = player.name;
-      raterSelect.appendChild(option);
-    });
-
-  if(selectedRater) raterSelect.value = selectedRater;
-
-  rows.innerHTML = "";
-
-  if(players.length === 0){
-    rows.innerHTML = `<div class="ratingsEmpty">No players loaded yet.</div>`;
-    return;
-  }
-
-  if(!isVotingOpen){
-    renderRatingsReadOnlyRows(players);
-    return;
-  }
-
-  renderRatingsVotingRows(players, selectedRater);
-}
-
-function renderRatingsReadOnlyRows(players){
-  const rows = document.getElementById("ratingsRows");
-  const latestRows = currentRatingStatus && Array.isArray(currentRatingStatus.latestRatings)
-    ? currentRatingStatus.latestRatings
-    : [];
-  const latestByPlayer = {};
-
-  latestRows.forEach(rating => {
-    if(rating && rating.player) latestByPlayer[rating.player] = rating;
   });
-
-  rows.innerHTML = "";
-
-  players
-    .slice()
-    .sort((a,b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
-      const latest = latestByPlayer[player.name] || {};
-      const row = document.createElement("div");
-      row.className = "ratingsRow ratingsReadOnlyRow";
-
-      row.innerHTML = `
-        <div class="ratingsPlayerCell">
-          <span class="ratingsPlayerNumber">${index + 1}</span>
-          <span class="ratingsPlayerName">${player.name}</span>
-        </div>
-        <div class="ratingsReadonlyValue">
-          <span class="ratingsReadonlyLabel">Current Skill</span>
-          <strong>${formatRatingNumber(player.skill)}</strong>
-        </div>
-        <div class="ratingsReadonlyValue ratingsReadonlyCategories">
-          <span class="ratingsReadonlyLabel">Category Average</span>
-          <strong>${formatRatingNumber(latest.finalSkill)}</strong>
-        </div>
-        <div class="ratingsReadonlyValue">
-          <span class="ratingsReadonlyLabel">Votes</span>
-          <strong>${formatRatingNumber(latest.voteCount)}</strong>
-        </div>
-      `;
-
-      rows.appendChild(row);
-    });
 }
 
-function getScaleOptionByIndex(index){
-  return RATING_SCALE_OPTIONS[Math.max(0, Math.min(RATING_SCALE_OPTIONS.length - 1, Number(index)))];
-}
-
-function createRatingCategoryControl(category, isSelf){
+function renderPlayerCell(player, index, selectedRater){
+  const isSelf = selectedRater && player.name === selectedRater;
   return `
-    <div class="ratingsCategoryCell ratingsTheme-${category.theme} ratingsUntouched" data-category="${category.key}">
-      <div class="ratingsCategoryTop">
-        <span class="ratingsCategoryName">${category.label}</span>
-        <span class="ratingsCategoryTip" data-tip="${category.tip}">?</span>
-      </div>
-      <div class="ratingsCategoryControl">
-        <span class="ratingsValueBox" data-value="">-</span>
-        <input
-          class="ratingsSlider ratingsCategorySlider"
-          type="range"
-          min="0"
-          max="4"
-          step="1"
-          value="2"
-          data-category="${category.key}"
-          data-rated="false"
-          ${isSelf ? "disabled" : ""}
-        >
-      </div>
-      <div class="ratingsCategoryLabel">Not rated</div>
+    <div class="playerCell">
+      <span class="playerNumber">${index + 1}</span>
+      <span class="playerName">${player.name}</span>
+      ${isSelf ? `<span class="selfBadge">YOU</span>` : ""}
     </div>
   `;
 }
 
-function updateCategoryControl(cell, slider){
-  const option = getScaleOptionByIndex(slider.value);
-  const box = cell.querySelector(".ratingsValueBox");
-  const label = cell.querySelector(".ratingsCategoryLabel");
-  const scoreClass = "ratingsScore-" + slider.value;
+function createNumericSlider(name, value = 5, disabled = false){
+  return `
+    <div class="sliderCell">
+      <input class="valueBox" data-field="${name}" type="number" min="0" max="10" step="1" value="${value}" ${disabled ? "disabled" : ""}>
+      <span class="rangeMin">0</span>
+      <input class="ratingSlider numericSlider" data-field="${name}" type="range" min="0" max="10" step="1" value="${value}" ${disabled ? "disabled" : ""}>
+      <span class="rangeMax">10</span>
+    </div>
+  `;
+}
+
+function bindNumericSliders(container){
+  container.querySelectorAll(".sliderCell").forEach(cell => {
+    const box = cell.querySelector(".valueBox");
+    const slider = cell.querySelector(".ratingSlider");
+
+    if(!box || !slider) return;
+
+    slider.addEventListener("input", () => {
+      box.value = slider.value;
+    });
+
+    box.addEventListener("input", () => {
+      let value = parseInt(box.value, 10);
+      if(Number.isNaN(value)) value = 0;
+      value = Math.max(0, Math.min(10, value));
+      box.value = value;
+      slider.value = value;
+    });
+  });
+}
+
+function renderVersion1Rows(){
+  const rows = document.getElementById("version1Rows");
+  const selectedRater = document.getElementById("version1Rater").value;
+  rows.innerHTML = "";
+
+  allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach((player, index) => {
+      const isSelf = selectedRater && player.name === selectedRater;
+      const row = document.createElement("div");
+      row.className = "ratingRow version1Row";
+      row.dataset.player = player.name;
+      row.innerHTML = `
+        ${renderPlayerCell(player, index, selectedRater)}
+        ${createNumericSlider("overall", 5, isSelf)}
+      `;
+      rows.appendChild(row);
+    });
+
+  bindNumericSliders(rows);
+}
+
+function renderVersion2Rows(){
+  const rows = document.getElementById("version2Rows");
+  const selectedRater = document.getElementById("version2Rater").value;
+  rows.innerHTML = "";
+
+  allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach((player, index) => {
+      const isSelf = selectedRater && player.name === selectedRater;
+      const row = document.createElement("div");
+      row.className = "ratingRow version2Row";
+      row.dataset.player = player.name;
+      row.innerHTML = `
+        ${renderPlayerCell(player, index, selectedRater)}
+        ${createNumericSlider("elimination", 5, isSelf)}
+        ${createNumericSlider("blitz", 5, isSelf)}
+        ${createNumericSlider("ctf", 5, isSelf)}
+      `;
+      rows.appendChild(row);
+    });
+
+  bindNumericSliders(rows);
+}
+
+function getScaleOption(index){
+  return scaleOptions[Math.max(0, Math.min(scaleOptions.length - 1, Number(index)))];
+}
+
+function createCategoryControl(category, disabled = false){
+  return `
+    <div class="categoryCell theme-${category.theme} untouched" data-category="${category.key}">
+      <div class="categoryTop">
+        <span class="categoryName">${category.label}</span>
+        <span class="categoryTip" data-tip="${category.tip}">?</span>
+      </div>
+      <div class="categoryControl">
+        <span class="categoryValue">-</span>
+        <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="4" step="1" value="2" data-rated="false" ${disabled ? "disabled" : ""}>
+      </div>
+      <div class="categoryScale">Not rated</div>
+    </div>
+  `;
+}
+
+function updateCategoryCell(cell, slider){
+  const option = getScaleOption(slider.value);
+  const value = cell.querySelector(".categoryValue");
+  const label = cell.querySelector(".categoryScale");
 
   slider.dataset.rated = "true";
   slider.dataset.value = option.value;
-  cell.classList.remove("ratingsUntouched", "ratingsScore-0", "ratingsScore-1", "ratingsScore-2", "ratingsScore-3", "ratingsScore-4");
-  cell.classList.add(scoreClass);
-
-  if(box){
-    box.textContent = option.value;
-    box.dataset.value = option.value;
-  }
-
-  if(label) label.textContent = option.label;
+  cell.classList.remove("untouched", "score-0", "score-1", "score-2", "score-3", "score-4");
+  cell.classList.add("score-" + slider.value);
+  value.textContent = option.value;
+  label.textContent = option.label;
 }
 
-function renderRatingsVotingRows(players, selectedRater){
-  const rows = document.getElementById("ratingsRows");
+function renderVersion3Rows(){
+  const rows = document.getElementById("version3Rows");
+  const selectedRater = document.getElementById("version3Rater").value;
   rows.innerHTML = "";
 
-  players
+  allPlayers
     .slice()
-    .sort((a,b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((player, index) => {
+      const isSelf = selectedRater && player.name === selectedRater;
       const row = document.createElement("div");
-      row.className = "ratingsRow";
-      row.setAttribute("data-player", player.name);
-
-      const isSelf = selectedRater && selectedRater === player.name;
-      if(isSelf) row.classList.add("ratingsSelfRow");
-
+      row.className = "ratingRow version3Row";
+      row.dataset.player = player.name;
       row.innerHTML = `
-        <div class="ratingsPlayerCell">
-          <span class="ratingsPlayerNumber">${index + 1}</span>
-          <span class="ratingsPlayerName">${player.name}</span>
-          ${isSelf ? `<span class="ratingsSelfBadge">YOU</span>` : ""}
-        </div>
-        <div class="ratingsCategoriesGrid">
-          ${RATING_CATEGORIES.map(category => createRatingCategoryControl(category, isSelf)).join("")}
+        ${renderPlayerCell(player, index, selectedRater)}
+        <div class="categoriesGrid">
+          ${version3Categories.map(category => createCategoryControl(category, isSelf)).join("")}
         </div>
       `;
-
-      row.querySelectorAll(".ratingsCategoryCell").forEach(cell => {
-        const slider = cell.querySelector(".ratingsCategorySlider");
-        if(!slider || isSelf) return;
-
-        slider.addEventListener("input", () => updateCategoryControl(cell, slider));
-      });
-
       rows.appendChild(row);
     });
+
+  rows.querySelectorAll(".categoryCell").forEach(cell => {
+    const slider = cell.querySelector(".categorySlider");
+    if(!slider || slider.disabled) return;
+    slider.addEventListener("input", () => updateCategoryCell(cell, slider));
+  });
 }
 
-function collectRatingsFormData(){
-  const raterSelect = document.getElementById("ratingsRaterSelect");
-  const rows = Array.from(document.querySelectorAll("#ratingsRows .ratingsRow"));
+document.addEventListener("change", e => {
+  if(e.target.id === "version1Rater") renderVersion1Rows();
+  if(e.target.id === "version2Rater") renderVersion2Rows();
+  if(e.target.id === "version3Rater") renderVersion3Rows();
+});
 
-  if(!raterSelect || !raterSelect.value){
-    return { ok: false, error: "Select your name before submitting ratings." };
-  }
+function getRaterForVersion(version){
+  const select = document.getElementById(`version${version}Rater`);
+  return select ? select.value : "";
+}
+
+function collectVersion1(){
+  const rater = getRaterForVersion(1);
+  if(!rater) return { ok: false, error: "Select your name before submitting Version 1." };
+
+  const ratings = Array.from(document.querySelectorAll("#version1Rows .ratingRow"))
+    .filter(row => row.dataset.player !== rater)
+    .map(row => ({
+      ratedPlayer: row.dataset.player,
+      overall: Number(row.querySelector('.ratingSlider[data-field="overall"]').value)
+    }));
+
+  return { ok: true, version: 1, rater, ratings };
+}
+
+function collectVersion2(){
+  const rater = getRaterForVersion(2);
+  if(!rater) return { ok: false, error: "Select your name before submitting Version 2." };
+
+  const ratings = Array.from(document.querySelectorAll("#version2Rows .ratingRow"))
+    .filter(row => row.dataset.player !== rater)
+    .map(row => ({
+      ratedPlayer: row.dataset.player,
+      elimination: Number(row.querySelector('.ratingSlider[data-field="elimination"]').value),
+      blitz: Number(row.querySelector('.ratingSlider[data-field="blitz"]').value),
+      ctf: Number(row.querySelector('.ratingSlider[data-field="ctf"]').value)
+    }));
+
+  return { ok: true, version: 2, rater, ratings };
+}
+
+function collectVersion3(){
+  const rater = getRaterForVersion(3);
+  if(!rater) return { ok: false, error: "Select your name before submitting Version 3." };
 
   const ratings = [];
+  let missing = false;
 
-  rows.forEach(row => {
-    const player = row.getAttribute("data-player");
-    if(!player || player === raterSelect.value) return;
+  Array.from(document.querySelectorAll("#version3Rows .ratingRow"))
+    .filter(row => row.dataset.player !== rater)
+    .forEach(row => {
+      const rating = { ratedPlayer: row.dataset.player };
 
-    const categoryRatings = {};
+      version3Categories.forEach(category => {
+        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
+        if(!slider || slider.dataset.rated !== "true"){
+          missing = true;
+          return;
+        }
 
-    RATING_CATEGORIES.forEach(category => {
-      const slider = row.querySelector(`.ratingsCategorySlider[data-category="${category.key}"]`);
-      categoryRatings[category.key] = slider && slider.dataset.rated === "true"
-        ? Number(slider.dataset.value)
-        : null;
+        rating[category.key] = Number(slider.dataset.value);
+      });
+
+      ratings.push(rating);
     });
 
-    ratings.push({
-      ratedPlayer: player,
-      ...categoryRatings
-    });
-  });
-
-  const validValues = RATING_SCALE_OPTIONS.map(option => option.value);
-  const invalid = ratings.length === 0 || ratings.some(r =>
-    RATING_CATEGORIES.some(category => !validValues.includes(r[category.key]))
-  );
-
-  if(invalid){
-    return { ok: false, error: "Please rate every category for every player before submitting." };
+  if(missing){
+    return { ok: false, error: "Please rate every Version 3 category before submitting." };
   }
 
-  return {
-    ok: true,
-    rater: raterSelect.value,
-    ratings: ratings
-  };
+  return { ok: true, version: 3, rater, ratings };
 }
 
-function submitRatingsPreview(formData){
-  const data = formData || collectRatingsFormData();
+function collectVersion(version){
+  if(version === 1) return collectVersion1();
+  if(version === 2) return collectVersion2();
+  return collectVersion3();
+}
+
+async function submitVersion(version){
+  const data = collectVersion(version);
 
   if(!data.ok){
-    showModal(data.error, "alert");
+    await showModal(data.error, "alert");
     return;
   }
 
-  showModal(`Offline preview saved for ${data.rater}. ${data.ratings.length} players rated.`, "alert");
-}
-
-async function submitRatings(){
-  const formData = collectRatingsFormData();
-  const codeValues = getRatingsCodeFormValues();
-
-  if(!formData.ok){
-    showModal(formData.error, "alert");
-    return;
-  }
-
-  if(!codeValues.code){
-    showModal("Enter your one-hour voting code before submitting.", "alert");
-    return;
-  }
+  const confirmed = await showModal(`Submit Version ${version} ratings for ${data.rater}?`, "confirm");
+  if(!confirmed) return;
 
   showBusy("SUBMITTING");
 
   try{
     const res = await api({
-      action: "submitRatings",
-      rater: formData.rater,
-      code: codeValues.code,
-      ratings: formData.ratings
+      action: "submitVersionRatings",
+      version: data.version,
+      rater: data.rater,
+      ratings: data.ratings
     });
 
     if(!res || !res.ok){
-      showModal((res && res.error) || "Could not submit ratings.", "alert");
-      return;
+      throw new Error((res && res.error) || `Could not submit Version ${version}.`);
     }
 
-    await refreshRatingStatus(formData.rater);
-    updateRatingsSubmitButton(true);
-    showModal(`Ratings submitted successfully. ${res.submittedCount || formData.ratings.length} players rated.`, "alert");
+    latestResults = res.results || latestResults;
+    renderResults();
+    await showModal(`Version ${version} submitted. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
   }catch(err){
-    submitRatingsPreview(formData);
+    await showModal(err.message || `Could not submit Version ${version}.`, "alert");
   }finally{
     hideBusy();
   }
+}
+
+function formatScore(value){
+  const numberValue = Number(value);
+  if(Number.isNaN(numberValue)) return "-";
+  return Number.isInteger(numberValue) ? String(numberValue) : numberValue.toFixed(1);
+}
+
+function getResultScore(playerName, version){
+  const versionRows = latestResults && latestResults["version" + version]
+    ? latestResults["version" + version]
+    : [];
+  const row = versionRows.find(item => item.player === playerName);
+  return row ? Number(row.finalRating) : null;
+}
+
+function renderResults(){
+  const container = document.getElementById("resultsRows");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  if(!allPlayers.length){
+    container.innerHTML = `<div class="emptyState">No players loaded yet.</div>`;
+    return;
+  }
+
+  allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(player => {
+      const v1 = getResultScore(player.name, 1);
+      const v2 = getResultScore(player.name, 2);
+      const v3 = getResultScore(player.name, 3);
+      const scores = [v1, v2, v3].filter(value => value !== null && !Number.isNaN(value));
+      const average = scores.length
+        ? scores.reduce((sum, value) => sum + value, 0) / scores.length
+        : null;
+
+      const row = document.createElement("div");
+      row.className = "resultsRow";
+      row.innerHTML = `
+        <div class="resultsPlayer">${player.name}</div>
+        <div>${formatScore(v1)}</div>
+        <div>${formatScore(v2)}</div>
+        <div>${formatScore(v3)}</div>
+        <div class="resultsAverage">${formatScore(average)}</div>
+      `;
+      container.appendChild(row);
+    });
 }
