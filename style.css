@@ -43,6 +43,7 @@ button{
   align-items:center;
   justify-content:center;
   gap:18px;
+  text-align:center;
 }
 
 #busyOverlay{
@@ -64,6 +65,17 @@ button{
   font-size:20px;
   font-weight:800;
   letter-spacing:1px;
+  width:100%;
+  text-align:center;
+}
+
+.busyBox{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  text-align:center;
 }
 
 .dots::after{
@@ -396,6 +408,11 @@ select{
   grid-template-columns:54px 18px minmax(120px, 1fr) 24px;
   align-items:center;
   gap:10px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  background:rgba(255,255,255,0.035);
+  transition:all 0.16s ease;
 }
 
 .numericUntouched{
@@ -406,6 +423,14 @@ select{
 .numericRated{
   filter:none;
   opacity:1;
+}
+
+.numericRated.score-0,
+.numericRated.score-1,
+.numericRated.score-2,
+.numericRated.score-3,
+.numericRated.score-4{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .valueBox{
@@ -525,9 +550,17 @@ select{
   background:rgba(239,68,68,0.10);
 }
 
+.score-0 .ratingSlider{
+  accent-color:#ef4444;
+}
+
 .score-1{
   border-color:rgba(249,115,22,0.85);
   background:rgba(249,115,22,0.10);
+}
+
+.score-1 .ratingSlider{
+  accent-color:#f97316;
 }
 
 .score-2{
@@ -535,14 +568,26 @@ select{
   background:rgba(250,204,21,0.10);
 }
 
+.score-2 .ratingSlider{
+  accent-color:#facc15;
+}
+
 .score-3{
   border-color:rgba(59,130,246,0.85);
   background:rgba(59,130,246,0.10);
 }
 
+.score-3 .ratingSlider{
+  accent-color:#3b82f6;
+}
+
 .score-4{
   border-color:rgba(34,197,94,0.85);
   background:rgba(34,197,94,0.10);
+}
+
+.score-4 .ratingSlider{
+  accent-color:#22c55e;
 }
 
 .infoBar{
@@ -679,6 +724,7 @@ select{
   align-items:center;
   justify-content:center;
   background:rgba(0,0,0,0.82);
+  padding:18px;
 }
 
 .modalBox{
@@ -689,22 +735,36 @@ select{
   border:1px solid rgba(255,255,255,0.14);
   text-align:center;
   box-shadow:0 24px 70px rgba(0,0,0,0.55);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
 .modalMessage{
   margin-bottom:20px;
   font-size:18px;
   line-height:1.35;
+  width:100%;
+  text-align:center;
+  color:#f8fafc;
 }
 
 .modalButtons{
   display:flex;
   justify-content:center;
   gap:12px;
+  width:100%;
 }
 
 .modalIconBtn{
   width:48px;
+  height:42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  font-size:19px;
+  line-height:1;
 }
 
 @media(max-width:980px){
