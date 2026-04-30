@@ -716,10 +716,12 @@ select{
 .submitRow{
   display:flex;
   justify-content:flex-end;
+  gap:12px;
   margin-top:18px;
 }
 
 .submitBtn,
+.resetBtn,
 .smallBtn,
 .btn{
   min-height:42px;
@@ -735,6 +737,17 @@ select{
   padding:0 24px;
   background:linear-gradient(180deg, #2563eb, #1d4ed8);
   box-shadow:0 10px 24px rgba(37,99,235,0.34);
+}
+
+.resetBtn{
+  min-width:190px;
+  padding:0 18px;
+  background:linear-gradient(180deg, #334155, #1e293b);
+  border:1px solid rgba(255,255,255,0.12);
+}
+
+.resetBtn:hover{
+  box-shadow:0 0 16px rgba(148,163,184,0.26);
 }
 
 .smallBtn{
@@ -978,6 +991,15 @@ select{
   }
 
   .submitBtn{
+    width:100%;
+    min-width:0;
+  }
+
+  .submitRow{
+    flex-direction:column-reverse;
+  }
+
+  .resetBtn{
     width:100%;
     min-width:0;
   }
