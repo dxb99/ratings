@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwhOi84b1_5S95OM2fANahXJi_8e4ARzikvKvFv9aU6Z0d-AM1w50MzplebCP0fr2utAg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyOfQRKh_tj5sdISprAbO2GsS2dyjIE3u37woE2wjzORhWcenHi_FuKyUa20rKD0GpaZQ/exec";
 const APP_TIME_ZONE = "Asia/Dubai";
 const APP_TIME_ZONE_LABEL = "GST";
 const API_TIMEOUT_MS = 30000;
