@@ -343,17 +343,17 @@ select{
 
 .v1Header,
 .version1Row{
-  grid-template-columns:minmax(190px, 1fr) minmax(260px, 1.6fr);
+  grid-template-columns:minmax(140px, 0.55fr) minmax(360px, 2.45fr);
 }
 
 .v2Header,
 .version2Row{
-  grid-template-columns:minmax(170px, 1fr) repeat(3, minmax(210px, 1.2fr));
+  grid-template-columns:minmax(130px, 0.55fr) repeat(3, minmax(220px, 1.15fr));
 }
 
 .v3Header,
 .version3Row{
-  grid-template-columns:minmax(190px, 0.7fr) minmax(0, 2.3fr);
+  grid-template-columns:minmax(140px, 0.48fr) minmax(0, 2.52fr);
 }
 
 .ratingRow{
@@ -470,7 +470,7 @@ select{
 }
 
 .ratingSlider::-webkit-slider-runnable-track{
-  height:2px;
+  height:3px;
   border-radius:999px;
   background:rgba(148,163,184,0.42);
 }
@@ -478,9 +478,9 @@ select{
 .ratingSlider::-webkit-slider-thumb{
   -webkit-appearance:none;
   appearance:none;
-  width:5px;
-  height:18px;
-  margin-top:-8px;
+  width:6px;
+  height:20px;
+  margin-top:-8.5px;
   border:none;
   border-radius:999px;
   background:currentColor;
@@ -488,14 +488,14 @@ select{
 }
 
 .ratingSlider::-moz-range-track{
-  height:2px;
+  height:3px;
   border-radius:999px;
   background:rgba(148,163,184,0.42);
 }
 
 .ratingSlider::-moz-range-thumb{
-  width:5px;
-  height:18px;
+  width:6px;
+  height:20px;
   border:none;
   border-radius:999px;
   background:currentColor;
@@ -722,6 +722,7 @@ select{
 
 .submitBtn,
 .resetBtn,
+.clearSavedBtn,
 .smallBtn,
 .btn{
   min-height:42px;
@@ -744,6 +745,20 @@ select{
   padding:0 18px;
   background:linear-gradient(180deg, #334155, #1e293b);
   border:1px solid rgba(255,255,255,0.12);
+}
+
+.clearSavedBtn{
+  min-width:160px;
+  padding:0 18px;
+  background:linear-gradient(180deg, #991b1b, #7f1d1d);
+  border:1px solid rgba(248,113,113,0.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.clearSavedBtn:hover{
+  box-shadow:0 0 16px rgba(248,113,113,0.30);
 }
 
 .resetBtn:hover{
@@ -1002,5 +1017,11 @@ select{
   .resetBtn{
     width:100%;
     min-width:0;
+  }
+
+  .clearSavedBtn{
+    width:100%;
+    min-width:0;
+    justify-content:center;
   }
 }
