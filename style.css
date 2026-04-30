@@ -160,7 +160,7 @@ h3{
 }
 
 .tabs{
-  width:min(100%, 980px);
+  width:100%;
   margin:16px auto 0 auto;
   display:grid;
   grid-template-columns:repeat(5, minmax(0, 1fr));
@@ -814,6 +814,39 @@ select{
 .resultsHeader,
 .resultsRow{
   grid-template-columns:minmax(160px, 1.4fr) repeat(4, minmax(90px, 1fr));
+}
+
+.resultsSortBtn{
+  min-height:58px;
+  width:100%;
+  border:none;
+  background:transparent;
+  color:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:inherit;
+  text-transform:inherit;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.resultsSortBtn::after{
+  content:"A-Z";
+  color:#64748b;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:0.4px;
+}
+
+.resultsSortBtn.active::after{
+  content:attr(data-sort-label);
+  color:#facc15;
+}
+
+.resultsSortBtn:hover{
+  color:#ffffff;
 }
 
 .resultsRow{
