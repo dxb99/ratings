@@ -1,548 +1,434 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyOfQRKh_tj5sdISprAbO2GsS2dyjIE3u37woE2wjzORhWcenHi_FuKyUa20rKD0GpaZQ/exec";
-const API_TIMEOUT_MS = 30000;
+const SHEET_PLAYERS = 'Players';
+const SHEET_VERSION_VOTES = 'VersionVotes';
+const SHEET_VERSION_RESULTS = 'VersionResults';
 
-let allPlayers = [];
-let latestResults = {};
+function doGet(){
+  return json({ ok:true });
+}
 
-const scaleOptions = [
-  { label: "Low", value: 0 },
-  { label: "Fair", value: 2.5 },
-  { label: "Average", value: 5 },
-  { label: "Good", value: 7.5 },
-  { label: "Excellent", value: 10 }
-];
+function doPost(e){
+  const data = JSON.parse(e.postData.contents);
+  const action = data.action;
 
-const version3Categories = [
-  {
-    key: "combat",
-    label: "Combat Skills",
-    tip: "Aim, weapon control, ammo use, and winning fights.",
-    theme: "combat"
-  },
-  {
-    key: "communication",
-    label: "Communication / Status Updates",
-    tip: "Clear, useful updates without cluttering comms.",
-    theme: "communication"
-  },
-  {
-    key: "decision",
-    label: "Decision Making",
-    tip: "Smart choices on when to attack, defend, rotate, or support.",
-    theme: "decision"
-  },
-  {
-    key: "awareness",
-    label: "Map Awareness",
-    tip: "Knowledge of routes, pickups, player positions, and pressure.",
-    theme: "awareness"
-  },
-  {
-    key: "movement",
-    label: "Movement / Speed",
-    tip: "Dodging, wall runs, chasing, escaping, and reaching key areas quickly.",
-    theme: "movement"
-  },
-  {
-    key: "impact",
-    label: "Team Impact",
-    tip: "Overall contribution to team control, momentum, and wins.",
-    theme: "impact"
+  if(action === "getInitialData") return json(getInitialData());
+  if(action === "getResults") return json({ ok:true, results:getComparisonResults() });
+  if(action === "getRaterSubmission") return json(getRaterSubmission(data));
+  if(action === "submitVersionRatings") return json(submitVersionRatings(data));
+  if(action === "setupSheets") return json(setupSheets());
+
+  return json({ ok:false, error:"Unknown action" });
+}
+
+function json(obj){
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheet(name){
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+}
+
+function getOrCreateSheet(name, headers){
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+
+  if(!sheet){
+    sheet = ss.insertSheet(name);
   }
-].sort((a, b) => a.label.localeCompare(b.label));
 
-window.addEventListener("load", async () => {
-  try{
-    setupTabs();
-    setupButtons();
-    await loadInitialData();
-    document.getElementById("loadingScreen").style.display = "none";
-    document.getElementById("app").classList.remove("hidden");
-  }catch(err){
-    console.error(err);
-    document.getElementById("loadingScreen").style.display = "none";
-    await showModal("Startup error. Open console for details.", "alert");
+  if(sheet.getLastRow() === 0 && headers && headers.length){
+    sheet.appendRow(headers);
   }
-});
 
-async function api(data){
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  return sheet;
+}
 
-  try{
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(data),
-      signal: controller.signal
-    });
+function getVoteHeaders(){
+  return [
+    "Timestamp",
+    "Version",
+    "Rater",
+    "RatedPlayer",
+    "Overall",
+    "Elimination",
+    "Blitz",
+    "CTF",
+    "Combat",
+    "Communication",
+    "Decision",
+    "Awareness",
+    "Movement",
+    "Impact",
+    "FinalRating"
+  ];
+}
 
-    return await res.json();
-  }finally{
-    clearTimeout(timer);
+function getResultHeaders(){
+  return [
+    "Version",
+    "Player",
+    "FinalRating",
+    "VoteCount",
+    "UpdatedAt"
+  ];
+}
+
+function setupSheets(){
+  getOrCreateSheet(SHEET_PLAYERS, ["Name", "Skill", "Active"]);
+  getOrCreateSheet(SHEET_VERSION_VOTES, getVoteHeaders());
+  getOrCreateSheet(SHEET_VERSION_RESULTS, getResultHeaders());
+
+  return {
+    ok:true,
+    sheets:[SHEET_PLAYERS, SHEET_VERSION_VOTES, SHEET_VERSION_RESULTS]
+  };
+}
+
+function getPlayers(){
+  const sheet = getSheet(SHEET_PLAYERS);
+
+  if(!sheet || sheet.getLastRow() < 2){
+    return [];
+  }
+
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues();
+
+  return rows
+    .filter(row => row[0] && row[2] !== false)
+    .map(row => ({
+      name: row[0].toString().trim(),
+      skill: Number(row[1]) || 0
+    }));
+}
+
+function getInitialData(){
+  setupSheets();
+
+  return {
+    ok:true,
+    players:getPlayers(),
+    results:getComparisonResults()
+  };
+}
+
+function normalizeNumber(value){
+  if(value === "" || value === null || typeof value === "undefined"){
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  if(isNaN(numberValue)){
+    return null;
+  }
+
+  return Math.max(0, Math.min(10, numberValue));
+}
+
+function average(values){
+  const cleaned = values
+    .map(value => Number(value))
+    .filter(value => !isNaN(value));
+
+  if(!cleaned.length){
+    return null;
+  }
+
+  return Math.round((cleaned.reduce((sum, value) => sum + value, 0) / cleaned.length) * 10) / 10;
+}
+
+function calculateFinalRating(version, rating){
+  if(version === 1){
+    return normalizeNumber(rating.overall);
+  }
+
+  if(version === 2){
+    return average([
+      normalizeNumber(rating.elimination),
+      normalizeNumber(rating.blitz),
+      normalizeNumber(rating.ctf)
+    ]);
+  }
+
+  if(version === 3){
+    return average([
+      normalizeNumber(rating.combat),
+      normalizeNumber(rating.communication),
+      normalizeNumber(rating.decision),
+      normalizeNumber(rating.awareness),
+      normalizeNumber(rating.movement),
+      normalizeNumber(rating.impact)
+    ]);
+  }
+
+  return null;
+}
+
+function getActivePlayerSet(){
+  const players = {};
+
+  getPlayers().forEach(player => {
+    players[player.name] = true;
+  });
+
+  return players;
+}
+
+function getRaterSubmission(data){
+  const version = Number(data.version);
+  const rater = data.rater ? data.rater.toString().trim() : "";
+
+  if([1, 2, 3].indexOf(version) === -1){
+    return { ok:false, error:"Invalid version" };
+  }
+
+  if(!rater){
+    return { ok:false, error:"Missing rater" };
+  }
+
+  const sheet = getOrCreateSheet(SHEET_VERSION_VOTES, getVoteHeaders());
+
+  if(sheet.getLastRow() < 2){
+    return { ok:true, version:version, rater:rater, ratings:[] };
+  }
+
+  const normalizedRater = rater.toString().trim().toLowerCase();
+  const rows = sheet
+    .getRange(2, 1, sheet.getLastRow() - 1, getVoteHeaders().length)
+    .getValues()
+    .filter(row => Number(row[1]) === version && row[2] && row[2].toString().trim().toLowerCase() === normalizedRater);
+
+  return {
+    ok:true,
+    version:version,
+    rater:rater,
+    ratings:rows.map(row => ({
+      ratedPlayer: row[3],
+      overall: row[4],
+      elimination: row[5],
+      blitz: row[6],
+      ctf: row[7],
+      combat: row[8],
+      communication: row[9],
+      decision: row[10],
+      awareness: row[11],
+      movement: row[12],
+      impact: row[13],
+      finalRating: row[14]
+    }))
+  };
+}
+
+function submitVersionRatings(data){
+  const version = Number(data.version);
+  const rater = data.rater ? data.rater.toString().trim() : "";
+  const ratings = Array.isArray(data.ratings) ? data.ratings : [];
+  const activePlayers = getActivePlayerSet();
+
+  if([1, 2, 3].indexOf(version) === -1){
+    return { ok:false, error:"Invalid version" };
+  }
+
+  if(!rater || !activePlayers[rater]){
+    return { ok:false, error:"Select a valid rater" };
+  }
+
+  if(!ratings.length){
+    return { ok:false, error:"No ratings submitted" };
+  }
+
+  const now = new Date();
+  const cleanedRows = [];
+  const seenPlayers = {};
+
+  ratings.forEach(rating => {
+    const ratedPlayer = rating && rating.ratedPlayer
+      ? rating.ratedPlayer.toString().trim()
+      : "";
+
+    if(!ratedPlayer || ratedPlayer === rater || !activePlayers[ratedPlayer] || seenPlayers[ratedPlayer]){
+      return;
+    }
+
+    const finalRating = calculateFinalRating(version, rating);
+
+    if(finalRating === null){
+      return;
+    }
+
+    seenPlayers[ratedPlayer] = true;
+
+    cleanedRows.push([
+      now,
+      version,
+      rater,
+      ratedPlayer,
+      version === 1 ? normalizeNumber(rating.overall) : "",
+      version === 2 ? normalizeNumber(rating.elimination) : "",
+      version === 2 ? normalizeNumber(rating.blitz) : "",
+      version === 2 ? normalizeNumber(rating.ctf) : "",
+      version === 3 ? normalizeNumber(rating.combat) : "",
+      version === 3 ? normalizeNumber(rating.communication) : "",
+      version === 3 ? normalizeNumber(rating.decision) : "",
+      version === 3 ? normalizeNumber(rating.awareness) : "",
+      version === 3 ? normalizeNumber(rating.movement) : "",
+      version === 3 ? normalizeNumber(rating.impact) : "",
+      finalRating
+    ]);
+  });
+
+  if(!cleanedRows.length){
+    return { ok:false, error:"No valid ratings submitted" };
+  }
+
+  const votesSheet = getOrCreateSheet(SHEET_VERSION_VOTES, getVoteHeaders());
+
+  deleteExistingSubmission(version, rater);
+
+  votesSheet
+    .getRange(votesSheet.getLastRow() + 1, 1, cleanedRows.length, getVoteHeaders().length)
+    .setValues(cleanedRows);
+
+  recalculateVersionResults(version);
+
+  return {
+    ok:true,
+    version:version,
+    rater:rater,
+    submittedCount:cleanedRows.length,
+    results:getComparisonResults()
+  };
+}
+
+function deleteExistingSubmission(version, rater){
+  const sheet = getOrCreateSheet(SHEET_VERSION_VOTES, getVoteHeaders());
+
+  if(sheet.getLastRow() < 2){
+    return;
+  }
+
+  const normalizedRater = rater.toString().trim().toLowerCase();
+  const rows = sheet
+    .getRange(2, 1, sheet.getLastRow() - 1, getVoteHeaders().length)
+    .getValues();
+
+  for(let i = rows.length - 1; i >= 0; i--){
+    const row = rows[i];
+    const rowVersion = Number(row[1]);
+    const rowRater = row[2] ? row[2].toString().trim().toLowerCase() : "";
+
+    if(rowVersion === Number(version) && rowRater === normalizedRater){
+      sheet.deleteRow(i + 2);
+    }
   }
 }
 
-function showBusy(text = "WORKING"){
-  const overlay = document.getElementById("busyOverlay");
-  const busyText = document.getElementById("busyText");
-  busyText.innerHTML = `${text}<span class="dots"></span>`;
-  overlay.style.display = "flex";
+function recalculateVersionResults(version){
+  const votesSheet = getOrCreateSheet(SHEET_VERSION_VOTES, getVoteHeaders());
+  const resultsSheet = getOrCreateSheet(SHEET_VERSION_RESULTS, getResultHeaders());
+
+  if(votesSheet.getLastRow() < 2){
+    return [];
+  }
+
+  const voteRows = votesSheet
+    .getRange(2, 1, votesSheet.getLastRow() - 1, getVoteHeaders().length)
+    .getValues()
+    .filter(row => Number(row[1]) === Number(version));
+
+  const grouped = {};
+
+  voteRows.forEach(row => {
+    const player = row[3] ? row[3].toString().trim() : "";
+    const finalRating = normalizeNumber(row[14]);
+
+    if(!player || finalRating === null){
+      return;
+    }
+
+    if(!grouped[player]){
+      grouped[player] = [];
+    }
+
+    grouped[player].push(finalRating);
+  });
+
+  const now = new Date();
+  const output = Object.keys(grouped)
+    .sort()
+    .map(player => [
+      version,
+      player,
+      average(grouped[player]),
+      grouped[player].length,
+      now
+    ]);
+
+  let existingRows = [];
+
+  if(resultsSheet.getLastRow() > 1){
+    existingRows = resultsSheet
+      .getRange(2, 1, resultsSheet.getLastRow() - 1, getResultHeaders().length)
+      .getValues()
+      .filter(row => Number(row[0]) !== Number(version));
+
+    resultsSheet
+      .getRange(2, 1, resultsSheet.getLastRow() - 1, getResultHeaders().length)
+      .clearContent();
+  }
+
+  const rowsToWrite = existingRows.concat(output);
+
+  if(rowsToWrite.length){
+    resultsSheet
+      .getRange(2, 1, rowsToWrite.length, getResultHeaders().length)
+      .setValues(rowsToWrite);
+  }
+
+  return output;
 }
 
-function hideBusy(){
-  document.getElementById("busyOverlay").style.display = "none";
-}
+function getComparisonResults(){
+  const sheet = getOrCreateSheet(SHEET_VERSION_RESULTS, getResultHeaders());
+  const results = {
+    version1: [],
+    version2: [],
+    version3: []
+  };
 
-function showModal(message, type = "alert"){
-  return new Promise(resolve => {
-    const modal = document.getElementById("customModal");
-    const msg = document.getElementById("modalMessage");
-    const confirmBtn = document.getElementById("modalConfirm");
-    const cancelBtn = document.getElementById("modalCancel");
+  if(sheet.getLastRow() < 2){
+    return results;
+  }
 
-    msg.textContent = message;
-    cancelBtn.style.display = type === "alert" ? "none" : "inline-flex";
-    modal.style.display = "flex";
+  const rows = sheet
+    .getRange(2, 1, sheet.getLastRow() - 1, getResultHeaders().length)
+    .getValues();
 
-    const cleanup = value => {
-      modal.style.display = "none";
-      confirmBtn.onclick = null;
-      cancelBtn.onclick = null;
-      resolve(value);
+  rows.forEach(row => {
+    const version = Number(row[0]);
+    const player = row[1] ? row[1].toString().trim() : "";
+    const finalRating = normalizeNumber(row[2]);
+    const voteCount = Number(row[3]) || 0;
+
+    if(!player || finalRating === null){
+      return;
+    }
+
+    const item = {
+      player:player,
+      finalRating:finalRating,
+      voteCount:voteCount
     };
 
-    confirmBtn.onclick = () => cleanup(true);
-    cancelBtn.onclick = () => cleanup(null);
-  });
-}
-
-function setupTabs(){
-  document.querySelectorAll("[data-tab]").forEach(btn => {
-    btn.addEventListener("click", () => showTab(btn.dataset.tab));
-  });
-}
-
-function showTab(tabId){
-  document.querySelectorAll(".tabContent").forEach(tab => {
-    tab.classList.toggle("active", tab.id === tabId);
+    if(version === 1) results.version1.push(item);
+    if(version === 2) results.version2.push(item);
+    if(version === 3) results.version3.push(item);
   });
 
-  document.querySelectorAll(".tabButton").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.tab === tabId);
+  Object.keys(results).forEach(key => {
+    results[key].sort((a, b) => a.player.localeCompare(b.player));
   });
 
-  window.scrollTo({ top: 0, behavior: "instant" });
-
-  if(tabId === "resultsTab"){
-    renderResults();
-  }
-}
-
-function setupButtons(){
-  document.getElementById("submitVersion1Btn").onclick = () => submitVersion(1);
-  document.getElementById("submitVersion2Btn").onclick = () => submitVersion(2);
-  document.getElementById("submitVersion3Btn").onclick = () => submitVersion(3);
-  document.getElementById("refreshResultsBtn").onclick = refreshResults;
-
-  const infoBtn = document.getElementById("infoBtn");
-  const infoPanel = document.getElementById("infoPanel");
-  const closeBtn = document.getElementById("infoCloseBtn");
-
-  infoBtn.onclick = e => {
-    e.stopPropagation();
-    infoPanel.classList.add("show");
-  };
-
-  closeBtn.onclick = e => {
-    e.stopPropagation();
-    infoPanel.classList.remove("show");
-  };
-
-  infoPanel.onclick = e => {
-    if(e.target === infoPanel) infoPanel.classList.remove("show");
-  };
-}
-
-async function loadInitialData(){
-  const data = await api({ action: "getInitialData" });
-
-  if(!data || !data.ok){
-    throw new Error((data && data.error) || "Failed loading ratings data");
-  }
-
-  allPlayers = data.players || [];
-  latestResults = data.results || {};
-  renderAllVersions();
-  renderResults();
-}
-
-async function refreshResults(){
-  showBusy("REFRESHING");
-
-  try{
-    const data = await api({ action: "getResults" });
-
-    if(!data || !data.ok){
-      throw new Error((data && data.error) || "Failed loading results");
-    }
-
-    latestResults = data.results || {};
-    renderResults();
-  }catch(err){
-    await showModal(err.message || "Could not refresh results.", "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-function renderAllVersions(){
-  populateRaterSelects();
-  renderVersion1Rows();
-  renderVersion2Rows();
-  renderVersion3Rows();
-}
-
-function populateRaterSelects(){
-  document.querySelectorAll(".raterSelect").forEach(select => {
-    const currentValue = select.value;
-    select.innerHTML = "";
-
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Select your name";
-    placeholder.disabled = true;
-    placeholder.selected = true;
-    select.appendChild(placeholder);
-
-    allPlayers
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .forEach(player => {
-        const option = document.createElement("option");
-        option.value = player.name;
-        option.textContent = player.name;
-        select.appendChild(option);
-      });
-
-    if(currentValue){
-      select.value = currentValue;
-    }
-  });
-}
-
-function renderPlayerCell(player, index, selectedRater){
-  const isSelf = selectedRater && player.name === selectedRater;
-  return `
-    <div class="playerCell">
-      <span class="playerNumber">${index + 1}</span>
-      <span class="playerName">${player.name}</span>
-      ${isSelf ? `<span class="selfBadge">YOU</span>` : ""}
-    </div>
-  `;
-}
-
-function createNumericSlider(name, value = 5, disabled = false){
-  return `
-    <div class="sliderCell">
-      <input class="valueBox" data-field="${name}" type="number" min="0" max="10" step="1" value="${value}" ${disabled ? "disabled" : ""}>
-      <span class="rangeMin">0</span>
-      <input class="ratingSlider numericSlider" data-field="${name}" type="range" min="0" max="10" step="1" value="${value}" ${disabled ? "disabled" : ""}>
-      <span class="rangeMax">10</span>
-    </div>
-  `;
-}
-
-function bindNumericSliders(container){
-  container.querySelectorAll(".sliderCell").forEach(cell => {
-    const box = cell.querySelector(".valueBox");
-    const slider = cell.querySelector(".ratingSlider");
-
-    if(!box || !slider) return;
-
-    slider.addEventListener("input", () => {
-      box.value = slider.value;
-    });
-
-    box.addEventListener("input", () => {
-      let value = parseInt(box.value, 10);
-      if(Number.isNaN(value)) value = 0;
-      value = Math.max(0, Math.min(10, value));
-      box.value = value;
-      slider.value = value;
-    });
-  });
-}
-
-function renderVersion1Rows(){
-  const rows = document.getElementById("version1Rows");
-  const selectedRater = document.getElementById("version1Rater").value;
-  rows.innerHTML = "";
-
-  allPlayers
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
-      const isSelf = selectedRater && player.name === selectedRater;
-      const row = document.createElement("div");
-      row.className = "ratingRow version1Row";
-      row.dataset.player = player.name;
-      row.innerHTML = `
-        ${renderPlayerCell(player, index, selectedRater)}
-        ${createNumericSlider("overall", 5, isSelf)}
-      `;
-      rows.appendChild(row);
-    });
-
-  bindNumericSliders(rows);
-}
-
-function renderVersion2Rows(){
-  const rows = document.getElementById("version2Rows");
-  const selectedRater = document.getElementById("version2Rater").value;
-  rows.innerHTML = "";
-
-  allPlayers
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
-      const isSelf = selectedRater && player.name === selectedRater;
-      const row = document.createElement("div");
-      row.className = "ratingRow version2Row";
-      row.dataset.player = player.name;
-      row.innerHTML = `
-        ${renderPlayerCell(player, index, selectedRater)}
-        ${createNumericSlider("elimination", 5, isSelf)}
-        ${createNumericSlider("blitz", 5, isSelf)}
-        ${createNumericSlider("ctf", 5, isSelf)}
-      `;
-      rows.appendChild(row);
-    });
-
-  bindNumericSliders(rows);
-}
-
-function getScaleOption(index){
-  return scaleOptions[Math.max(0, Math.min(scaleOptions.length - 1, Number(index)))];
-}
-
-function createCategoryControl(category, disabled = false){
-  return `
-    <div class="categoryCell theme-${category.theme} untouched" data-category="${category.key}">
-      <div class="categoryTop">
-        <span class="categoryName">${category.label}</span>
-        <span class="categoryTip" data-tip="${category.tip}">?</span>
-      </div>
-      <div class="categoryControl">
-        <span class="categoryValue">-</span>
-        <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="4" step="1" value="2" data-rated="false" ${disabled ? "disabled" : ""}>
-      </div>
-      <div class="categoryScale">Not rated</div>
-    </div>
-  `;
-}
-
-function updateCategoryCell(cell, slider){
-  const option = getScaleOption(slider.value);
-  const value = cell.querySelector(".categoryValue");
-  const label = cell.querySelector(".categoryScale");
-
-  slider.dataset.rated = "true";
-  slider.dataset.value = option.value;
-  cell.classList.remove("untouched", "score-0", "score-1", "score-2", "score-3", "score-4");
-  cell.classList.add("score-" + slider.value);
-  value.textContent = option.value;
-  label.textContent = option.label;
-}
-
-function renderVersion3Rows(){
-  const rows = document.getElementById("version3Rows");
-  const selectedRater = document.getElementById("version3Rater").value;
-  rows.innerHTML = "";
-
-  allPlayers
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
-      const isSelf = selectedRater && player.name === selectedRater;
-      const row = document.createElement("div");
-      row.className = "ratingRow version3Row";
-      row.dataset.player = player.name;
-      row.innerHTML = `
-        ${renderPlayerCell(player, index, selectedRater)}
-        <div class="categoriesGrid">
-          ${version3Categories.map(category => createCategoryControl(category, isSelf)).join("")}
-        </div>
-      `;
-      rows.appendChild(row);
-    });
-
-  rows.querySelectorAll(".categoryCell").forEach(cell => {
-    const slider = cell.querySelector(".categorySlider");
-    if(!slider || slider.disabled) return;
-    slider.addEventListener("input", () => updateCategoryCell(cell, slider));
-  });
-}
-
-document.addEventListener("change", e => {
-  if(e.target.id === "version1Rater") renderVersion1Rows();
-  if(e.target.id === "version2Rater") renderVersion2Rows();
-  if(e.target.id === "version3Rater") renderVersion3Rows();
-});
-
-function getRaterForVersion(version){
-  const select = document.getElementById(`version${version}Rater`);
-  return select ? select.value : "";
-}
-
-function collectVersion1(){
-  const rater = getRaterForVersion(1);
-  if(!rater) return { ok: false, error: "Select your name before submitting Version 1." };
-
-  const ratings = Array.from(document.querySelectorAll("#version1Rows .ratingRow"))
-    .filter(row => row.dataset.player !== rater)
-    .map(row => ({
-      ratedPlayer: row.dataset.player,
-      overall: Number(row.querySelector('.ratingSlider[data-field="overall"]').value)
-    }));
-
-  return { ok: true, version: 1, rater, ratings };
-}
-
-function collectVersion2(){
-  const rater = getRaterForVersion(2);
-  if(!rater) return { ok: false, error: "Select your name before submitting Version 2." };
-
-  const ratings = Array.from(document.querySelectorAll("#version2Rows .ratingRow"))
-    .filter(row => row.dataset.player !== rater)
-    .map(row => ({
-      ratedPlayer: row.dataset.player,
-      elimination: Number(row.querySelector('.ratingSlider[data-field="elimination"]').value),
-      blitz: Number(row.querySelector('.ratingSlider[data-field="blitz"]').value),
-      ctf: Number(row.querySelector('.ratingSlider[data-field="ctf"]').value)
-    }));
-
-  return { ok: true, version: 2, rater, ratings };
-}
-
-function collectVersion3(){
-  const rater = getRaterForVersion(3);
-  if(!rater) return { ok: false, error: "Select your name before submitting Version 3." };
-
-  const ratings = [];
-  let missing = false;
-
-  Array.from(document.querySelectorAll("#version3Rows .ratingRow"))
-    .filter(row => row.dataset.player !== rater)
-    .forEach(row => {
-      const rating = { ratedPlayer: row.dataset.player };
-
-      version3Categories.forEach(category => {
-        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
-        if(!slider || slider.dataset.rated !== "true"){
-          missing = true;
-          return;
-        }
-
-        rating[category.key] = Number(slider.dataset.value);
-      });
-
-      ratings.push(rating);
-    });
-
-  if(missing){
-    return { ok: false, error: "Please rate every Version 3 category before submitting." };
-  }
-
-  return { ok: true, version: 3, rater, ratings };
-}
-
-function collectVersion(version){
-  if(version === 1) return collectVersion1();
-  if(version === 2) return collectVersion2();
-  return collectVersion3();
-}
-
-async function submitVersion(version){
-  const data = collectVersion(version);
-
-  if(!data.ok){
-    await showModal(data.error, "alert");
-    return;
-  }
-
-  const confirmed = await showModal(`Submit Version ${version} ratings for ${data.rater}?`, "confirm");
-  if(!confirmed) return;
-
-  showBusy("SUBMITTING");
-
-  try{
-    const res = await api({
-      action: "submitVersionRatings",
-      version: data.version,
-      rater: data.rater,
-      ratings: data.ratings
-    });
-
-    if(!res || !res.ok){
-      throw new Error((res && res.error) || `Could not submit Version ${version}.`);
-    }
-
-    latestResults = res.results || latestResults;
-    renderResults();
-    await showModal(`Version ${version} submitted. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
-  }catch(err){
-    await showModal(err.message || `Could not submit Version ${version}.`, "alert");
-  }finally{
-    hideBusy();
-  }
-}
-
-function formatScore(value){
-  const numberValue = Number(value);
-  if(Number.isNaN(numberValue)) return "-";
-  return Number.isInteger(numberValue) ? String(numberValue) : numberValue.toFixed(1);
-}
-
-function getResultScore(playerName, version){
-  const versionRows = latestResults && latestResults["version" + version]
-    ? latestResults["version" + version]
-    : [];
-  const row = versionRows.find(item => item.player === playerName);
-  return row ? Number(row.finalRating) : null;
-}
-
-function renderResults(){
-  const container = document.getElementById("resultsRows");
-  if(!container) return;
-
-  container.innerHTML = "";
-
-  if(!allPlayers.length){
-    container.innerHTML = `<div class="emptyState">No players loaded yet.</div>`;
-    return;
-  }
-
-  allPlayers
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach(player => {
-      const v1 = getResultScore(player.name, 1);
-      const v2 = getResultScore(player.name, 2);
-      const v3 = getResultScore(player.name, 3);
-      const scores = [v1, v2, v3].filter(value => value !== null && !Number.isNaN(value));
-      const average = scores.length
-        ? scores.reduce((sum, value) => sum + value, 0) / scores.length
-        : null;
-
-      const row = document.createElement("div");
-      row.className = "resultsRow";
-      row.innerHTML = `
-        <div class="resultsPlayer">${player.name}</div>
-        <div>${formatScore(v1)}</div>
-        <div>${formatScore(v2)}</div>
-        <div>${formatScore(v3)}</div>
-        <div class="resultsAverage">${formatScore(average)}</div>
-      `;
-      container.appendChild(row);
-    });
+  return results;
 }
