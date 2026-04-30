@@ -164,22 +164,16 @@ function setupButtons(){
 }
 
 async function loadInitialData(){
-  showBusy("LOADING");
+  const data = await api({ action: "getInitialData" });
 
-  try{
-    const data = await api({ action: "getInitialData" });
-
-    if(!data || !data.ok){
-      throw new Error((data && data.error) || "Failed loading ratings data");
-    }
-
-    allPlayers = data.players || [];
-    latestResults = data.results || {};
-    renderAllVersions();
-    renderResults();
-  }finally{
-    hideBusy();
+  if(!data || !data.ok){
+    throw new Error((data && data.error) || "Failed loading ratings data");
   }
+
+  allPlayers = data.players || [];
+  latestResults = data.results || {};
+  renderAllVersions();
+  renderResults();
 }
 
 async function refreshResults(){
