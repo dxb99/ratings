@@ -463,7 +463,10 @@ select{
 .ratingSlider{
   width:100%;
   accent-color:#3b82f6;
-  height:12px;
+  height:18px;
+  -webkit-appearance:none;
+  appearance:none;
+  background:transparent;
 }
 
 .ratingSlider::-webkit-slider-runnable-track{
@@ -473,9 +476,15 @@ select{
 }
 
 .ratingSlider::-webkit-slider-thumb{
-  width:13px;
-  height:13px;
-  margin-top:-5.5px;
+  -webkit-appearance:none;
+  appearance:none;
+  width:5px;
+  height:18px;
+  margin-top:-8px;
+  border:none;
+  border-radius:999px;
+  background:currentColor;
+  box-shadow:0 0 8px currentColor;
 }
 
 .ratingSlider::-moz-range-track{
@@ -485,8 +494,12 @@ select{
 }
 
 .ratingSlider::-moz-range-thumb{
-  width:13px;
-  height:13px;
+  width:5px;
+  height:18px;
+  border:none;
+  border-radius:999px;
+  background:currentColor;
+  box-shadow:0 0 8px currentColor;
 }
 
 .categoriesGrid{
