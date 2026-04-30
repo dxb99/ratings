@@ -195,6 +195,25 @@ function setupResultsSorting(){
       renderResults();
     };
   });
+
+  const mobileSelect = document.getElementById("mobileResultsSortSelect");
+  const mobileDirection = document.getElementById("mobileResultsSortDirection");
+
+  if(mobileSelect){
+    mobileSelect.onchange = () => {
+      currentResultsSort.key = mobileSelect.value;
+      currentResultsSort.direction = "asc";
+      renderResults();
+    };
+  }
+
+  if(mobileDirection){
+    mobileDirection.onclick = () => {
+      currentResultsSort.direction =
+        currentResultsSort.direction === "asc" ? "desc" : "asc";
+      renderResults();
+    };
+  }
 }
 
 async function loadInitialData(){
@@ -770,9 +789,20 @@ function updateResultsSortHeaders(){
     btn.classList.toggle("active", isActive);
     btn.setAttribute(
       "data-sort-label",
-      currentResultsSort.direction === "asc" ? "A-Z" : "Z-A"
+      currentResultsSort.direction === "asc" ? "▲" : "▼"
     );
   });
+
+  const mobileSelect = document.getElementById("mobileResultsSortSelect");
+  const mobileDirection = document.getElementById("mobileResultsSortDirection");
+
+  if(mobileSelect){
+    mobileSelect.value = currentResultsSort.key;
+  }
+
+  if(mobileDirection){
+    mobileDirection.textContent = currentResultsSort.direction === "asc" ? "▲" : "▼";
+  }
 }
 
 function buildResultRows(){
