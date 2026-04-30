@@ -8,6 +8,10 @@ let savedSubmissionState = {
   2: false,
   3: false
 };
+let currentResultsSort = {
+  key: "player",
+  direction: "asc"
+};
 
 const scaleOptions = [
   { label: "Low", value: 0 },
@@ -154,6 +158,7 @@ function setupButtons(){
   document.getElementById("clearSavedVersion2Btn").onclick = () => clearSavedVersion(2);
   document.getElementById("clearSavedVersion3Btn").onclick = () => clearSavedVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
+  setupResultsSorting();
 
   const infoBtn = document.getElementById("infoBtn");
   const infoPanel = document.getElementById("infoPanel");
@@ -172,6 +177,24 @@ function setupButtons(){
   infoPanel.onclick = e => {
     if(e.target === infoPanel) infoPanel.classList.remove("show");
   };
+}
+
+function setupResultsSorting(){
+  document.querySelectorAll(".resultsSortBtn").forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.sort;
+
+      if(currentResultsSort.key === key){
+        currentResultsSort.direction =
+          currentResultsSort.direction === "asc" ? "desc" : "asc";
+      }else{
+        currentResultsSort.key = key;
+        currentResultsSort.direction = "asc";
+      }
+
+      renderResults();
+    };
+  });
 }
 
 async function loadInitialData(){
@@ -741,21 +764,21 @@ function getResultScore(playerName, version){
   return row ? Number(row.finalRating) : null;
 }
 
-function renderResults(){
-  const container = document.getElementById("resultsRows");
-  if(!container) return;
+function updateResultsSortHeaders(){
+  document.querySelectorAll(".resultsSortBtn").forEach(btn => {
+    const isActive = btn.dataset.sort === currentResultsSort.key;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute(
+      "data-sort-label",
+      currentResultsSort.direction === "asc" ? "A-Z" : "Z-A"
+    );
+  });
+}
 
-  container.innerHTML = "";
-
-  if(!allPlayers.length){
-    container.innerHTML = `<div class="emptyState">No players loaded yet.</div>`;
-    return;
-  }
-
-  allPlayers
+function buildResultRows(){
+  return allPlayers
     .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach(player => {
+    .map(player => {
       const v1 = getResultScore(player.name, 1);
       const v2 = getResultScore(player.name, 2);
       const v3 = getResultScore(player.name, 3);
@@ -764,14 +787,66 @@ function renderResults(){
         ? scores.reduce((sum, value) => sum + value, 0) / scores.length
         : null;
 
+      return {
+        player: player.name,
+        v1: v1,
+        v2: v2,
+        v3: v3,
+        average: average
+      };
+    });
+}
+
+function compareResultRows(a, b){
+  const key = currentResultsSort.key;
+  const direction = currentResultsSort.direction === "asc" ? 1 : -1;
+
+  if(key === "player"){
+    return a.player.localeCompare(b.player) * direction;
+  }
+
+  const aValue = a[key];
+  const bValue = b[key];
+  const aMissing = aValue === null || Number.isNaN(aValue);
+  const bMissing = bValue === null || Number.isNaN(bValue);
+
+  if(aMissing && bMissing){
+    return a.player.localeCompare(b.player);
+  }
+
+  if(aMissing) return 1;
+  if(bMissing) return -1;
+
+  if(aValue < bValue) return -1 * direction;
+  if(aValue > bValue) return 1 * direction;
+  return a.player.localeCompare(b.player);
+}
+
+function renderResults(){
+  const container = document.getElementById("resultsRows");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  if(!allPlayers.length){
+    container.innerHTML = `<div class="emptyState">No players loaded yet.</div>`;
+    updateResultsSortHeaders();
+    return;
+  }
+
+  updateResultsSortHeaders();
+
+  buildResultRows()
+    .sort(compareResultRows)
+    .forEach(player => {
       const row = document.createElement("div");
       row.className = "resultsRow";
       row.innerHTML = `
-        <div class="resultsPlayer" data-label="Player">${player.name}</div>
-        <div data-label="Version 1">${formatScore(v1)}</div>
-        <div data-label="Version 2">${formatScore(v2)}</div>
-        <div data-label="Version 3">${formatScore(v3)}</div>
-        <div class="resultsAverage" data-label="Average">${formatScore(average)}</div>
+        <div class="resultsPlayer" data-label="Player">${player.player}</div>
+        <div data-label="Version 1">${formatScore(player.v1)}</div>
+        <div data-label="Version 2">${formatScore(player.v2)}</div>
+        <div data-label="Version 3">${formatScore(player.v3)}</div>
+        <div class="resultsAverage" data-label="Average">${formatScore(player.average)}</div>
       `;
       container.appendChild(row);
     });
