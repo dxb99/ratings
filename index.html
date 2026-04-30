@@ -29,6 +29,7 @@
       <button class="tabButton" data-tab="version2Tab" data-mobile-label="V2">VERSION 2</button>
       <button class="tabButton" data-tab="version3Tab" data-mobile-label="V3">VERSION 3</button>
       <button class="tabButton" data-tab="resultsTab" data-mobile-label="RESULTS">RESULTS</button>
+      <button class="tabButton" data-tab="statusTab" data-mobile-label="STATUS">STATUS</button>
     </nav>
   </header>
 
@@ -215,6 +216,34 @@
           <button type="button" class="resultsSortBtn" data-sort="weighted">V3 WEIGHTED</button>
         </div>
         <div id="resultsRows"></div>
+      </div>
+    </section>
+
+    <section id="statusTab" class="tabContent">
+      <div class="sectionHeader">
+        <div>
+          <div class="sectionKicker">STATUS</div>
+          <h2>Submission Status</h2>
+          <p>See who has saved each version, plus submit, update, and clear-saved counts.</p>
+        </div>
+        <button id="refreshStatusBtn" class="smallBtn">REFRESH STATUS</button>
+      </div>
+
+      <div class="statusShell">
+        <div class="statusHeader">
+          <div>PLAYER</div>
+          <div>VOTED</div>
+          <div>V1</div>
+          <div>V1 UPD</div>
+          <div>V1 CLR</div>
+          <div>V2</div>
+          <div>V2 UPD</div>
+          <div>V2 CLR</div>
+          <div>V3</div>
+          <div>V3 UPD</div>
+          <div>V3 CLR</div>
+        </div>
+        <div id="statusRows"></div>
       </div>
     </section>
   </main>
