@@ -147,6 +147,9 @@ function setupButtons(){
   document.getElementById("submitVersion1Btn").onclick = () => submitVersion(1);
   document.getElementById("submitVersion2Btn").onclick = () => submitVersion(2);
   document.getElementById("submitVersion3Btn").onclick = () => submitVersion(3);
+  document.getElementById("resetVersion1Btn").onclick = () => resetVersion(1);
+  document.getElementById("resetVersion2Btn").onclick = () => resetVersion(2);
+  document.getElementById("resetVersion3Btn").onclick = () => resetVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
 
   const infoBtn = document.getElementById("infoBtn");
@@ -335,6 +338,17 @@ function bindNumericSliders(container){
       markNumericRated(cell, value);
     });
   });
+}
+
+async function resetVersion(version){
+  const confirmed = await showModal(
+    `Clear the Version ${version} form on this screen? Saved ratings in the sheet will not be deleted.`,
+    "confirm"
+  );
+
+  if(!confirmed) return;
+
+  rerenderVersion(version);
 }
 
 function renderVersion1Rows(){
