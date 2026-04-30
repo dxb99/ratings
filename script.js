@@ -3,6 +3,11 @@ const API_TIMEOUT_MS = 30000;
 
 let allPlayers = [];
 let latestResults = {};
+let savedSubmissionState = {
+  1: false,
+  2: false,
+  3: false
+};
 
 const scaleOptions = [
   { label: "Low", value: 0 },
@@ -174,6 +179,26 @@ async function loadInitialData(){
   latestResults = data.results || {};
   renderAllVersions();
   renderResults();
+  updateSubmitButtons();
+}
+
+function setAllRaterSelects(rater){
+  document.querySelectorAll(".raterSelect").forEach(select => {
+    if(select.value !== rater){
+      select.value = rater;
+    }
+  });
+}
+
+function updateSubmitButtons(){
+  [1, 2, 3].forEach(version => {
+    const btn = document.getElementById(`submitVersion${version}Btn`);
+    if(!btn) return;
+
+    btn.textContent = savedSubmissionState[version]
+      ? `UPDATE VERSION ${version}`
+      : `SUBMIT VERSION ${version}`;
+  });
 }
 
 async function refreshResults(){
@@ -413,9 +438,9 @@ function renderVersion3Rows(){
 }
 
 document.addEventListener("change", e => {
-  if(e.target.id === "version1Rater") handleRaterChange(1);
-  if(e.target.id === "version2Rater") handleRaterChange(2);
-  if(e.target.id === "version3Rater") handleRaterChange(3);
+  if(e.target.classList.contains("raterSelect")){
+    handleRaterChange(e.target.value);
+  }
 });
 
 function rerenderVersion(version){
@@ -424,24 +449,33 @@ function rerenderVersion(version){
   if(version === 3) renderVersion3Rows();
 }
 
-async function handleRaterChange(version){
-  rerenderVersion(version);
-
-  const rater = getRaterForVersion(version);
+async function handleRaterChange(rater){
   if(!rater) return;
+
+  setAllRaterSelects(rater);
+  savedSubmissionState = { 1: false, 2: false, 3: false };
+  renderAllVersions();
+  updateSubmitButtons();
 
   showBusy("LOADING SAVED RATINGS");
 
   try{
-    const res = await api({
-      action: "getRaterSubmission",
-      version: version,
-      rater: rater
+    const responses = await Promise.all([1, 2, 3].map(version => {
+      return api({
+        action: "getRaterSubmission",
+        version: version,
+        rater: rater
+      });
+    }));
+
+    responses.forEach(res => {
+      if(res && res.ok && Array.isArray(res.ratings) && res.ratings.length){
+        savedSubmissionState[res.version] = true;
+        applySavedSubmission(res.version, res.ratings);
+      }
     });
 
-    if(res && res.ok && Array.isArray(res.ratings) && res.ratings.length){
-      applySavedSubmission(version, res.ratings);
-    }
+    updateSubmitButtons();
   }catch(err){
     console.warn("Saved rating load failed", err);
   }finally{
@@ -590,10 +624,11 @@ async function submitVersion(version){
     return;
   }
 
-  const confirmed = await showModal(`Submit Version ${version} ratings for ${data.rater}?`, "confirm");
+  const actionLabel = savedSubmissionState[version] ? "Update" : "Submit";
+  const confirmed = await showModal(`${actionLabel} Version ${version} ratings for ${data.rater}?`, "confirm");
   if(!confirmed) return;
 
-  showBusy("SUBMITTING");
+  showBusy(savedSubmissionState[version] ? "UPDATING" : "SUBMITTING");
 
   try{
     const res = await api({
@@ -607,9 +642,12 @@ async function submitVersion(version){
       throw new Error((res && res.error) || `Could not submit Version ${version}.`);
     }
 
+    const doneLabel = savedSubmissionState[version] ? "updated" : "submitted";
     latestResults = res.results || latestResults;
+    savedSubmissionState[version] = true;
+    updateSubmitButtons();
     renderResults();
-    await showModal(`Version ${version} submitted. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
+    await showModal(`Version ${version} ${doneLabel}. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
   }catch(err){
     await showModal(err.message || `Could not submit Version ${version}.`, "alert");
   }finally{
