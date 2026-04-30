@@ -3,6 +3,7 @@ const API_TIMEOUT_MS = 30000;
 
 let allPlayers = [];
 let latestResults = {};
+let latestStatus = [];
 let savedSubmissionState = {
   1: false,
   2: false,
@@ -145,6 +146,10 @@ function showTab(tabId){
   if(tabId === "resultsTab"){
     renderResults();
   }
+
+  if(tabId === "statusTab"){
+    refreshStatus();
+  }
 }
 
 function setupButtons(){
@@ -158,6 +163,7 @@ function setupButtons(){
   document.getElementById("clearSavedVersion2Btn").onclick = () => clearSavedVersion(2);
   document.getElementById("clearSavedVersion3Btn").onclick = () => clearSavedVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
+  document.getElementById("refreshStatusBtn").onclick = refreshStatus;
   setupResultsSorting();
 
   const infoBtn = document.getElementById("infoBtn");
@@ -225,8 +231,10 @@ async function loadInitialData(){
 
   allPlayers = data.players || [];
   latestResults = data.results || {};
+  latestStatus = data.status || [];
   renderAllVersions();
   renderResults();
+  renderStatus();
   updateSubmitButtons();
 }
 
@@ -269,6 +277,65 @@ async function refreshResults(){
   }finally{
     hideBusy();
   }
+}
+
+async function refreshStatus(){
+  showBusy("REFRESHING STATUS");
+
+  try{
+    const data = await api({ action: "getStatus" });
+
+    if(!data || !data.ok){
+      throw new Error((data && data.error) || "Failed loading status");
+    }
+
+    latestStatus = data.status || [];
+    renderStatus();
+  }catch(err){
+    await showModal(err.message || "Could not refresh status.", "alert");
+  }finally{
+    hideBusy();
+  }
+}
+
+function formatStatusBadge(hasVoted){
+  return `<span class="statusBadge ${hasVoted ? "yes" : "no"}">${hasVoted ? "YES" : "NO"}</span>`;
+}
+
+function renderStatus(){
+  const container = document.getElementById("statusRows");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  const rows = Array.isArray(latestStatus) ? latestStatus : [];
+
+  if(!rows.length){
+    container.innerHTML = `<div class="emptyState">No player status loaded yet.</div>`;
+    return;
+  }
+
+  rows
+    .slice()
+    .sort((a, b) => a.player.localeCompare(b.player))
+    .forEach(status => {
+      const row = document.createElement("div");
+      row.className = "statusRow";
+      row.innerHTML = `
+        <div class="statusPlayer" data-label="Player">${status.player}</div>
+        <div data-label="Voted">${status.votedVersions || "None"}</div>
+        <div data-label="V1">${formatStatusBadge(!!status.v1Voted)}</div>
+        <div data-label="V1 Updates">${status.v1Updates || 0}</div>
+        <div data-label="V1 Clears">${status.v1Clears || 0}</div>
+        <div data-label="V2">${formatStatusBadge(!!status.v2Voted)}</div>
+        <div data-label="V2 Updates">${status.v2Updates || 0}</div>
+        <div data-label="V2 Clears">${status.v2Clears || 0}</div>
+        <div data-label="V3">${formatStatusBadge(!!status.v3Voted)}</div>
+        <div data-label="V3 Updates">${status.v3Updates || 0}</div>
+        <div data-label="V3 Clears">${status.v3Clears || 0}</div>
+      `;
+      container.appendChild(row);
+    });
 }
 
 function renderAllVersions(){
@@ -440,9 +507,11 @@ async function clearSavedVersion(version){
 
     savedSubmissionState[version] = false;
     latestResults = res.results || latestResults;
+    latestStatus = res.status || latestStatus;
     rerenderVersion(version);
     updateSubmitButtons();
     renderResults();
+    renderStatus();
 
     await showModal(`Saved Version ${version} ratings cleared. You can rate and submit this version again now.`, "alert");
   }catch(err){
@@ -769,9 +838,11 @@ async function submitVersion(version){
 
     const doneLabel = savedSubmissionState[version] ? "updated" : "submitted";
     latestResults = res.results || latestResults;
+    latestStatus = res.status || latestStatus;
     savedSubmissionState[version] = true;
     updateSubmitButtons();
     renderResults();
+    renderStatus();
     await showModal(`Version ${version} ${doneLabel}. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
   }catch(err){
     await showModal(err.message || `Could not submit Version ${version}.`, "alert");
