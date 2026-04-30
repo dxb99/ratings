@@ -150,6 +150,9 @@ function setupButtons(){
   document.getElementById("resetVersion1Btn").onclick = () => resetVersion(1);
   document.getElementById("resetVersion2Btn").onclick = () => resetVersion(2);
   document.getElementById("resetVersion3Btn").onclick = () => resetVersion(3);
+  document.getElementById("clearSavedVersion1Btn").onclick = () => clearSavedVersion(1);
+  document.getElementById("clearSavedVersion2Btn").onclick = () => clearSavedVersion(2);
+  document.getElementById("clearSavedVersion3Btn").onclick = () => clearSavedVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
 
   const infoBtn = document.getElementById("infoBtn");
@@ -196,11 +199,14 @@ function setAllRaterSelects(rater){
 function updateSubmitButtons(){
   [1, 2, 3].forEach(version => {
     const btn = document.getElementById(`submitVersion${version}Btn`);
-    if(!btn) return;
+    const clearSavedBtn = document.getElementById(`clearSavedVersion${version}Btn`);
+    if(!btn || !clearSavedBtn) return;
 
     btn.textContent = savedSubmissionState[version]
       ? `UPDATE VERSION ${version}`
       : `SUBMIT VERSION ${version}`;
+
+    clearSavedBtn.style.display = savedSubmissionState[version] ? "inline-flex" : "none";
   });
 }
 
@@ -349,6 +355,48 @@ async function resetVersion(version){
   if(!confirmed) return;
 
   rerenderVersion(version);
+}
+
+async function clearSavedVersion(version){
+  const rater = getRaterForVersion(version);
+
+  if(!rater){
+    await showModal(`Select your name before clearing saved Version ${version} ratings.`, "alert");
+    return;
+  }
+
+  const confirmed = await showModal(
+    `Clear saved Version ${version} ratings for ${rater}? This will remove that version from the Results comparison until it is submitted again.`,
+    "confirm"
+  );
+
+  if(!confirmed) return;
+
+  showBusy("CLEARING SAVED RATINGS");
+
+  try{
+    const res = await api({
+      action: "clearVersionSubmission",
+      version: version,
+      rater: rater
+    });
+
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || `Could not clear saved Version ${version}.`);
+    }
+
+    savedSubmissionState[version] = false;
+    latestResults = res.results || latestResults;
+    rerenderVersion(version);
+    updateSubmitButtons();
+    renderResults();
+
+    await showModal(`Saved Version ${version} ratings cleared. You can rate and submit this version again now.`, "alert");
+  }catch(err){
+    await showModal(err.message || `Could not clear saved Version ${version}.`, "alert");
+  }finally{
+    hideBusy();
+  }
 }
 
 function renderVersion1Rows(){
