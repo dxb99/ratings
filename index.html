@@ -3,131 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DXB99 Player Ratings</title>
+  <title>DXB99 Ratings Lab</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="admin-locked">
+<body>
 
 <div id="loadingScreen">
-  <div class="loaderLogo">DXB<span>99</span></div>
+  <div class="loadingLogo">DXB<span>99</span></div>
   <div class="loadingText">LOADING<span class="dots"></span></div>
 </div>
 
 <div id="app" class="hidden">
+
   <header>
     <div class="brand">
       <img src="DXB99.MATCHUP.png" alt="DXB99">
       <div>
-        <h1>PLAYER RATINGS</h1>
-        <p>Rate every player across six gameplay categories.</p>
+        <h1>DXB99 RATINGS LAB</h1>
+        <p>Compare three rating methods before choosing the best one.</p>
       </div>
     </div>
 
-    <div id="adminBar">
-      <span id="adminStatus">LOCKED</span>
-      <button id="adminLockBtn" class="btn btn-dark" style="display:none;">LOCK</button>
-    </div>
+    <nav class="tabs" aria-label="Ratings tabs">
+      <button class="tabButton active" data-tab="homeTab">HOME</button>
+      <button class="tabButton" data-tab="version1Tab">VERSION 1</button>
+      <button class="tabButton" data-tab="version2Tab">VERSION 2</button>
+      <button class="tabButton" data-tab="version3Tab">VERSION 3</button>
+      <button class="tabButton" data-tab="resultsTab">RESULTS</button>
+    </nav>
   </header>
 
-  <main id="ratingsLayout">
-    <section class="ratingsHeaderRow">
-      <div class="ratingsTitleBlock">
-        <div class="ratingsKicker"><span class="ratingsTitleStar">★</span> PLAYER RATINGS</div>
-        <p>Rate all players using six overall gameplay categories. You can submit your ratings once every voting cycle.</p>
-      </div>
+  <main>
+    <section id="homeTab" class="tabContent active">
+      <div class="heroPanel">
+        <div class="heroKicker">PLAYER RATINGS</div>
+        <h2>Choose a rating method to test</h2>
+        <p>Each version writes to the Ratings sheet. The Results tab compares the final player scores from all three methods.</p>
 
-      <div id="ratingsStatusCard" class="ratingsStatusCard">
-        <div class="ratingsStatusLabel">Voting status</div>
-        <div id="ratingsStatusText" class="ratingsStatusText">Checking status</div>
-        <div id="ratingsStatusDate" class="ratingsStatusDate">Please wait.</div>
-      </div>
-    </section>
+        <div class="versionButtons">
+          <button class="versionLaunch" data-tab="version1Tab">
+            <span>Version 1</span>
+            <small>Single overall score</small>
+          </button>
 
-    <section class="ratingsRaterCard">
-      <div class="ratingsRaterIcon">USER</div>
-      <div class="ratingsRaterFields">
-        <label for="ratingsRaterSelect">YOUR NAME (RATER)</label>
-        <select id="ratingsRaterSelect"></select>
-        <div class="ratingsHelpText">This name will be recorded with your ratings.</div>
+          <button class="versionLaunch" data-tab="version2Tab">
+            <span>Version 2</span>
+            <small>Elimination, Blitz, CTF</small>
+          </button>
 
-        <div class="ratingsCodeGrid">
-          <div>
-            <label for="ratingsEmailInput">EMAIL</label>
-            <input id="ratingsEmailInput" class="ratingsTextInput" type="email" placeholder="name@example.com">
-          </div>
-
-          <button id="requestRatingCodeBtn" class="btn btn-blue">REQUEST CODE</button>
-
-          <div>
-            <label for="ratingsCodeInput">CODE</label>
-            <input id="ratingsCodeInput" class="ratingsTextInput" type="text" inputmode="numeric" maxlength="6" placeholder="Enter code">
-          </div>
-        </div>
-
-        <div id="ratingsCodeStatus" class="ratingsHelpText">Voting codes are valid for 1 hour.</div>
-      </div>
-    </section>
-
-    <section class="ratingsAdminCard">
-      <div>
-        <div class="ratingsAdminTitle">Admin controls</div>
-        <div class="ratingsHelpText">Setup sheets, apply finished ratings, or manage active players.</div>
-      </div>
-      <div class="ratingsAdminActions">
-        <button id="setupRatingSheetsBtn" class="btn btn-green">SETUP SHEETS</button>
-        <button id="manualVotingToggleBtn" class="btn btn-blue">UNLOCK VOTING</button>
-        <button id="applyRatingsBtn" class="btn btn-orange">APPLY RATINGS</button>
-        <button id="ratingsAddPlayerBtn" class="btn btn-blue">ADD PLAYER</button>
-        <button id="ratingsRemovePlayerBtn" class="btn btn-red">REMOVE PLAYER</button>
-      </div>
-    </section>
-
-    <section class="ratingsInfoBar">
-      <div class="ratingsInfoMain">
-        <button id="ratingsInfoBtn" class="ratingsInfoIcon" type="button">i</button>
-        <span>Rate each player across six gameplay categories. Untouched sliders must be completed before submitting.</span>
-        <div id="ratingsInfoTooltip" class="ratingsInfoTooltip">
-          <div class="ratingsInfoPanel">
-            <div class="ratingsInfoPanelTop">
-              <div class="ratingsInfoPanelTitle">How Ratings Work</div>
-              <button id="ratingsInfoCloseBtn" class="ratingsInfoIcon ratingsInfoCloseBtn" type="button">x</button>
-            </div>
-            <p>Each voting cycle starts fresh. Old votes from previous cycles are not reused.</p>
-            <p>Each player is rated in six categories: <strong>Combat Skills</strong>, <strong>Communication / Status Updates</strong>, <strong>Decision Making</strong>, <strong>Map Awareness</strong>, <strong>Movement / Speed</strong>, and <strong>Team Impact</strong>.</p>
-            <div class="ratingsInfoExample">Low = 0 | Fair = 2.5 | Average = 5 | Good = 7.5 | Excellent = 10</div>
-            <p>Untouched sliders are not counted. Every category must be rated before submitting.</p>
-            <p>The system averages the six category scores for each player. That decimal number becomes the player's overall skill level used by the matchup generator.</p>
-          </div>
+          <button class="versionLaunch" data-tab="version3Tab">
+            <span>Version 3</span>
+            <small>Six gameplay categories</small>
+          </button>
         </div>
       </div>
-      <div class="ratingsScaleText">Low | Fair | Average | Good | Excellent</div>
     </section>
 
-    <section class="ratingsTableShell">
-      <div class="ratingsTableHeader">
-        <div>PLAYER</div>
-        <div class="ratingsCategoryHeader">OVERALL CATEGORIES <span>Low to Excellent</span></div>
-      </div>
-      <div id="ratingsRows"></div>
-    </section>
-
-    <section class="ratingsFooterRow">
-      <div class="ratingsVoteCard">
-        <div class="ratingsVoteIcon">
-          <img src="DXB99.MATCHUP.png" alt="DXB99">
-        </div>
+    <section id="version1Tab" class="tabContent">
+      <div class="sectionHeader">
         <div>
-          <div class="ratingsVoteTitle">YOUR VOTE MATTERS</div>
-          <div class="ratingsHelpText">These ratings help balance teams and improve the overall experience for everyone.</div>
+          <div class="sectionKicker">VERSION 1</div>
+          <h2>Overall Player Rating</h2>
+          <p>Rate each player with one 0-10 score.</p>
         </div>
       </div>
 
-      <div class="ratingsSubmitWrap">
-        <button id="submitRatingsBtn" class="ratingsSubmitBtn">
-          <span class="ratingsSubmitIcon">✓</span>
-          <span>SUBMIT RATINGS</span>
-        </button>
-        <div class="ratingsSubmitNote">Make sure every category is rated before submitting.</div>
+      <div class="raterCard">
+        <label for="version1Rater">YOUR NAME (RATER)</label>
+        <select id="version1Rater" class="raterSelect"></select>
+      </div>
+
+      <div class="ratingTableShell">
+        <div class="ratingTableHeader v1Header">
+          <div>PLAYER</div>
+          <div>OVERALL RATING <span>0-10</span></div>
+        </div>
+        <div id="version1Rows" class="ratingRows"></div>
+      </div>
+
+      <div class="submitRow">
+        <button id="submitVersion1Btn" class="submitBtn">SUBMIT VERSION 1</button>
+      </div>
+    </section>
+
+    <section id="version2Tab" class="tabContent">
+      <div class="sectionHeader">
+        <div>
+          <div class="sectionKicker">VERSION 2</div>
+          <h2>Game Mode Ratings</h2>
+          <p>Rate each player separately for Elimination, Blitz, and Capture the Flag.</p>
+        </div>
+      </div>
+
+      <div class="raterCard">
+        <label for="version2Rater">YOUR NAME (RATER)</label>
+        <select id="version2Rater" class="raterSelect"></select>
+      </div>
+
+      <div class="ratingTableShell">
+        <div class="ratingTableHeader v2Header">
+          <div>PLAYER</div>
+          <div>ELIMINATION <span>0-10</span></div>
+          <div>BLITZ <span>0-10</span></div>
+          <div>CTF <span>0-10</span></div>
+        </div>
+        <div id="version2Rows" class="ratingRows"></div>
+      </div>
+
+      <div class="submitRow">
+        <button id="submitVersion2Btn" class="submitBtn">SUBMIT VERSION 2</button>
+      </div>
+    </section>
+
+    <section id="version3Tab" class="tabContent">
+      <div class="sectionHeader">
+        <div>
+          <div class="sectionKicker">VERSION 3</div>
+          <h2>Breakdown Rating</h2>
+          <p>Rate each player across six gameplay categories.</p>
+        </div>
+      </div>
+
+      <div class="raterCard">
+        <label for="version3Rater">YOUR NAME (RATER)</label>
+        <select id="version3Rater" class="raterSelect"></select>
+      </div>
+
+      <section class="infoBar">
+        <button id="infoBtn" class="infoIcon" type="button">i</button>
+        <span>Low = 0 | Fair = 2.5 | Average = 5 | Good = 7.5 | Excellent = 10</span>
+        <div id="infoPanel" class="infoPanel">
+          <div class="infoPanelBox">
+            <button id="infoCloseBtn" class="infoCloseBtn" type="button">x</button>
+            <h3>How Version 3 Works</h3>
+            <p>Each player receives six category scores. The system averages those six numbers to produce one final player rating.</p>
+            <p>Example: 10, 7.5, 7.5, 5, 10, 7.5 gives a final rating of 7.9.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="ratingTableShell">
+        <div class="ratingTableHeader v3Header">
+          <div>PLAYER</div>
+          <div>GAMEPLAY CATEGORIES <span>Low to Excellent</span></div>
+        </div>
+        <div id="version3Rows" class="ratingRows"></div>
+      </div>
+
+      <div class="submitRow">
+        <button id="submitVersion3Btn" class="submitBtn">SUBMIT VERSION 3</button>
+      </div>
+    </section>
+
+    <section id="resultsTab" class="tabContent">
+      <div class="sectionHeader">
+        <div>
+          <div class="sectionKicker">RESULTS</div>
+          <h2>Compare Final Outcomes</h2>
+          <p>See how each rating method ranks the same players.</p>
+        </div>
+        <button id="refreshResultsBtn" class="smallBtn">REFRESH RESULTS</button>
+      </div>
+
+      <div class="resultsShell">
+        <div class="resultsHeader">
+          <div>PLAYER</div>
+          <div>VERSION 1</div>
+          <div>VERSION 2</div>
+          <div>VERSION 3</div>
+          <div>AVERAGE</div>
+        </div>
+        <div id="resultsRows"></div>
       </div>
     </section>
   </main>
@@ -136,14 +182,13 @@
 <div id="busyOverlay">
   <div class="busyBox">
     <div class="spinner"></div>
-    <div id="busyText">LOADING<span class="dots"></span></div>
+    <div id="busyText">WORKING<span class="dots"></span></div>
   </div>
 </div>
 
 <div id="customModal" class="modalOverlay">
   <div class="modalBox">
     <div id="modalMessage" class="modalMessage"></div>
-    <input id="modalInput" class="modalInput" type="password" placeholder="Enter password">
     <div class="modalButtons">
       <button id="modalCancel" class="btn btn-red modalIconBtn">x</button>
       <button id="modalConfirm" class="btn btn-green modalIconBtn">✓</button>
