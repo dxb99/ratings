@@ -317,9 +317,20 @@ function renderPlayerCell(player, index, selectedRater){
   `;
 }
 
+function getNumericSliderLabel(name){
+  const labels = {
+    overall: "Overall Rating",
+    elimination: "Elimination",
+    blitz: "Blitz",
+    ctf: "CTF"
+  };
+
+  return labels[name] || name;
+}
+
 function createNumericSlider(name, value = 5, disabled = false, isRated = false){
   return `
-    <div class="sliderCell ${isRated ? "numericRated" : "numericUntouched"}">
+    <div class="sliderCell ${isRated ? "numericRated" : "numericUntouched"}" data-slider-label="${getNumericSliderLabel(name)}">
       <input class="valueBox" data-field="${name}" type="number" min="0" max="10" step="1" value="${isRated ? value : ""}" placeholder="-" ${disabled ? "disabled" : ""}>
       <span class="rangeMin">0</span>
       <input class="ratingSlider numericSlider" data-field="${name}" type="range" min="0" max="10" step="1" value="${value}" data-rated="${isRated ? "true" : "false"}" ${disabled ? "disabled" : ""}>
@@ -775,12 +786,53 @@ function formatScore(value){
   return Number.isInteger(numberValue) ? String(numberValue) : numberValue.toFixed(1);
 }
 
-function getResultScore(playerName, version){
+function averageScores(values){
+  const cleaned = values.filter(value => value !== null && !Number.isNaN(value));
+
+  if(!cleaned.length) return null;
+
+  return cleaned.reduce((sum, value) => sum + value, 0) / cleaned.length;
+}
+
+function medianScore(values){
+  const cleaned = values
+    .filter(value => value !== null && !Number.isNaN(value))
+    .slice()
+    .sort((a, b) => a - b);
+
+  if(!cleaned.length) return null;
+
+  const middle = Math.floor(cleaned.length / 2);
+
+  if(cleaned.length % 2){
+    return cleaned[middle];
+  }
+
+  return (cleaned[middle - 1] + cleaned[middle]) / 2;
+}
+
+function getResultItem(playerName, version){
   const versionRows = latestResults && latestResults["version" + version]
     ? latestResults["version" + version]
     : [];
-  const row = versionRows.find(item => item.player === playerName);
-  return row ? Number(row.finalRating) : null;
+
+  return versionRows.find(item => item.player === playerName) || null;
+}
+
+function getResultNumber(item, key){
+  if(!item) return null;
+
+  const value = Number(item[key]);
+
+  return Number.isNaN(value) ? null : value;
+}
+
+function getResultAverage(item){
+  return getResultNumber(item, "averageRating") ?? getResultNumber(item, "finalRating");
+}
+
+function getResultMedian(item){
+  return getResultNumber(item, "medianRating") ?? getResultAverage(item);
 }
 
 function updateResultsSortHeaders(){
@@ -789,7 +841,7 @@ function updateResultsSortHeaders(){
     btn.classList.toggle("active", isActive);
     btn.setAttribute(
       "data-sort-label",
-      currentResultsSort.direction === "asc" ? "▲" : "▼"
+      currentResultsSort.direction === "asc" ? "\u25B2" : "\u25BC"
     );
   });
 
@@ -801,7 +853,7 @@ function updateResultsSortHeaders(){
   }
 
   if(mobileDirection){
-    mobileDirection.textContent = currentResultsSort.direction === "asc" ? "▲" : "▼";
+    mobileDirection.textContent = currentResultsSort.direction === "asc" ? "\u25B2" : "\u25BC";
   }
 }
 
@@ -809,20 +861,31 @@ function buildResultRows(){
   return allPlayers
     .slice()
     .map(player => {
-      const v1 = getResultScore(player.name, 1);
-      const v2 = getResultScore(player.name, 2);
-      const v3 = getResultScore(player.name, 3);
-      const scores = [v1, v2, v3].filter(value => value !== null && !Number.isNaN(value));
-      const average = scores.length
-        ? scores.reduce((sum, value) => sum + value, 0) / scores.length
-        : null;
+      const v1 = getResultItem(player.name, 1);
+      const v2 = getResultItem(player.name, 2);
+      const v3 = getResultItem(player.name, 3);
+      const versionAverages = [
+        getResultAverage(v1),
+        getResultAverage(v2),
+        getResultAverage(v3)
+      ];
+      const versionMedians = [
+        getResultMedian(v1),
+        getResultMedian(v2),
+        getResultMedian(v3)
+      ];
 
       return {
         player: player.name,
-        v1: v1,
-        v2: v2,
-        v3: v3,
-        average: average
+        v1Avg: versionAverages[0],
+        v1Med: versionMedians[0],
+        v2Avg: versionAverages[1],
+        v2Med: versionMedians[1],
+        v3Avg: versionAverages[2],
+        v3Med: versionMedians[2],
+        overallAvg: averageScores(versionAverages),
+        overallMed: medianScore(versionMedians),
+        weighted: getResultNumber(v3, "weightedScore")
       };
     });
 }
@@ -873,10 +936,15 @@ function renderResults(){
       row.className = "resultsRow";
       row.innerHTML = `
         <div class="resultsPlayer" data-label="Player">${player.player}</div>
-        <div data-label="Version 1">${formatScore(player.v1)}</div>
-        <div data-label="Version 2">${formatScore(player.v2)}</div>
-        <div data-label="Version 3">${formatScore(player.v3)}</div>
-        <div class="resultsAverage" data-label="Average">${formatScore(player.average)}</div>
+        <div data-label="V1 Average">${formatScore(player.v1Avg)}</div>
+        <div data-label="V1 Median">${formatScore(player.v1Med)}</div>
+        <div data-label="V2 Average">${formatScore(player.v2Avg)}</div>
+        <div data-label="V2 Median">${formatScore(player.v2Med)}</div>
+        <div data-label="V3 Average">${formatScore(player.v3Avg)}</div>
+        <div data-label="V3 Median">${formatScore(player.v3Med)}</div>
+        <div class="resultsAverage" data-label="Overall Average">${formatScore(player.overallAvg)}</div>
+        <div data-label="Overall Median">${formatScore(player.overallMed)}</div>
+        <div data-label="V3 Weighted">${formatScore(player.weighted)}</div>
       `;
       container.appendChild(row);
     });
