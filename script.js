@@ -296,8 +296,18 @@ function markNumericRated(cell, value){
   box.value = cleaned;
   slider.value = cleaned;
   slider.dataset.rated = "true";
-  cell.classList.remove("numericUntouched");
-  cell.classList.add("numericRated");
+  cell.classList.remove("numericUntouched", "score-0", "score-1", "score-2", "score-3", "score-4");
+  cell.classList.add("numericRated", getNumericScoreClass(cleaned));
+}
+
+function getNumericScoreClass(value){
+  const numeric = Number(value);
+
+  if(numeric <= 2) return "score-0";
+  if(numeric <= 4) return "score-1";
+  if(numeric <= 6) return "score-2";
+  if(numeric <= 8) return "score-3";
+  return "score-4";
 }
 
 function bindNumericSliders(container){
@@ -316,7 +326,7 @@ function bindNumericSliders(container){
       if(Number.isNaN(value)){
         box.value = "";
         slider.dataset.rated = "false";
-        cell.classList.remove("numericRated");
+        cell.classList.remove("numericRated", "score-0", "score-1", "score-2", "score-3", "score-4");
         cell.classList.add("numericUntouched");
         return;
       }
