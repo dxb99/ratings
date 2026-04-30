@@ -816,6 +816,10 @@ select{
   grid-template-columns:minmax(160px, 1.4fr) repeat(4, minmax(90px, 1fr));
 }
 
+.mobileResultsSort{
+  display:none;
+}
+
 .resultsSortBtn{
   min-height:58px;
   width:100%;
@@ -833,9 +837,9 @@ select{
 }
 
 .resultsSortBtn::after{
-  content:"A-Z";
+  content:"△";
   color:#64748b;
-  font-size:10px;
+  font-size:11px;
   font-weight:900;
   letter-spacing:0.4px;
 }
@@ -972,6 +976,39 @@ select{
 
   .resultsHeader{
     display:none;
+  }
+
+  .mobileResultsSort{
+    display:block;
+    padding:16px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+
+  .mobileResultsSort label{
+    display:block;
+    margin-bottom:8px;
+    text-align:center;
+  }
+
+  .mobileResultsSortControls{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 48px;
+    gap:10px;
+    align-items:center;
+  }
+
+  .mobileSortDirection{
+    width:48px;
+    height:42px;
+    border:none;
+    border-radius:8px;
+    background:#1d4ed8;
+    color:#facc15;
+    font-size:18px;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
 
   .resultsRow{
