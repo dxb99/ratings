@@ -210,6 +210,7 @@ main{
 .raterCard,
 .ratingTableShell,
 .infoBar,
+.weightsPanel,
 .resultsShell{
   background:
     linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)),
@@ -813,7 +814,49 @@ select{
 
 .resultsHeader,
 .resultsRow{
-  grid-template-columns:minmax(160px, 1.4fr) repeat(4, minmax(90px, 1fr));
+  grid-template-columns:minmax(150px, 1.35fr) repeat(9, minmax(96px, 1fr));
+  min-width:1040px;
+}
+
+.resultsShell{
+  overflow-x:auto;
+}
+
+.weightsPanel{
+  padding:16px 18px;
+  margin-bottom:18px;
+}
+
+.weightsTitle{
+  color:#facc15;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1px;
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.weightsGrid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
+}
+
+.weightsGrid span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 10px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.035);
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:800;
+}
+
+.weightsGrid strong{
+  color:#ffffff;
 }
 
 .mobileResultsSort{
@@ -837,7 +880,7 @@ select{
 }
 
 .resultsSortBtn::after{
-  content:"△";
+  content:"\25B3";
   color:#64748b;
   font-size:11px;
   font-weight:900;
@@ -925,8 +968,8 @@ select{
 
 @media(max-width:980px){
   main{
-    width:calc(100% - 18px);
-    margin-top:18px;
+    width:calc(100% - 14px);
+    margin-top:14px;
   }
 
   .sectionHeader{
@@ -940,7 +983,8 @@ select{
   }
 
   .versionButtons,
-  .categoriesGrid{
+  .categoriesGrid,
+  .weightsGrid{
     grid-template-columns:1fr;
   }
 
@@ -961,11 +1005,11 @@ select{
 
   .ratingRow{
     align-items:stretch;
-    gap:14px;
-    padding:16px;
-    margin:12px;
+    gap:16px;
+    padding:18px;
+    margin:12px 8px;
     border:1px solid rgba(255,255,255,0.10);
-    border-radius:14px;
+    border-radius:16px;
     background:rgba(255,255,255,0.025);
   }
 
@@ -1012,6 +1056,7 @@ select{
   }
 
   .resultsRow{
+    min-width:0;
     gap:10px;
     padding:16px;
     margin:12px;
@@ -1050,22 +1095,22 @@ select{
 
 @media(max-width:640px){
   header{
-    padding:12px 10px 10px 10px;
+    padding:9px 8px 8px 8px;
   }
 
   .brand{
     justify-content:center;
     text-align:center;
-    gap:10px;
+    gap:8px;
   }
 
   .brand img{
-    width:52px;
-    height:52px;
+    width:42px;
+    height:42px;
   }
 
   h1{
-    font-size:clamp(20px, 6vw, 24px);
+    font-size:clamp(18px, 5.5vw, 22px);
   }
 
   .brand p{
@@ -1075,21 +1120,30 @@ select{
 
   .tabs{
     grid-template-columns:repeat(5, minmax(0, 1fr));
-    gap:3px;
+    gap:4px;
     padding:4px;
-    margin-top:12px;
+    margin-top:9px;
+    border-radius:12px;
   }
 
   .tabButton{
-    min-height:38px;
+    min-height:36px;
     padding:0 2px;
-    font-size:9.5px;
+    font-size:0;
     letter-spacing:0;
+    border-radius:9px;
+  }
+
+  .tabButton::after{
+    content:attr(data-mobile-label);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:0.3px;
   }
 
   .heroPanel{
     min-height:auto;
-    padding:30px 16px;
+    padding:28px 16px;
   }
 
   .heroKicker,
@@ -1122,45 +1176,76 @@ select{
 
   .raterCard{
     text-align:center;
-    padding:16px;
+    padding:16px 14px;
   }
 
   .playerCell{
     justify-content:flex-start;
+    gap:10px;
   }
 
   .playerName{
-    font-size:16px;
+    font-size:18px;
+    font-weight:900;
+  }
+
+  .playerNumber{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    font-size:15px;
+  }
+
+  .selfBadge{
+    font-size:10px;
+    padding:4px 8px;
   }
 
   .sliderCell{
-    grid-template-columns:minmax(0, 1fr) 24px 52px;
-    gap:8px;
-    padding:12px;
+    grid-template-columns:24px minmax(0, 1fr) 26px 60px;
+    gap:10px;
+    padding:14px;
+    border-radius:12px;
+  }
+
+  .sliderCell::before{
+    content:attr(data-slider-label);
+    grid-column:1 / -1;
+    color:#cbd5e1;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:0.5px;
+    text-align:left;
+    text-transform:uppercase;
   }
 
   .sliderCell .rangeMin{
-    display:none;
-  }
-
-  .sliderCell .ratingSlider{
+    display:inline;
     grid-column:1;
   }
 
-  .sliderCell .rangeMax{
+  .sliderCell .ratingSlider{
     grid-column:2;
   }
 
-  .valueBox{
+  .sliderCell .rangeMax{
     grid-column:3;
   }
 
+  .valueBox{
+    grid-column:4;
+    height:44px;
+    font-size:17px;
+    border-radius:10px;
+  }
+
   .ratingRow .playerCell{
-    padding-bottom:4px;
+    padding-bottom:2px;
   }
 
   .categoryCell{
-    padding:12px;
+    padding:14px;
+    border-radius:12px;
   }
 
   .categoryTop{
@@ -1168,7 +1253,18 @@ select{
   }
 
   .categoryName{
-    font-size:13px;
+    font-size:15px;
+  }
+
+  .categoryValue{
+    min-height:38px;
+    font-size:14px;
+    border-radius:9px;
+  }
+
+  .categoryControl{
+    grid-template-columns:minmax(0, 1fr) 52px;
+    gap:10px;
   }
 
   .infoBar{
@@ -1188,6 +1284,8 @@ select{
 
   .submitRow{
     flex-direction:column-reverse;
+    gap:10px;
+    margin-top:16px;
   }
 
   .resetBtn{
