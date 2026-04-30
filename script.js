@@ -312,8 +312,8 @@ function markNumericRated(cell, value){
 function getNumericScoreClass(value){
   const numeric = Number(value);
 
-  if(numeric <= 2) return "score-0";
-  if(numeric <= 4) return "score-1";
+  if(numeric <= 1) return "score-0";
+  if(numeric <= 3) return "score-1";
   if(numeric <= 6) return "score-2";
   if(numeric <= 8) return "score-3";
   return "score-4";
