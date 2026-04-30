@@ -816,6 +816,7 @@ select{
 .resultsRow{
   grid-template-columns:minmax(150px, 1.35fr) repeat(9, minmax(96px, 1fr));
   min-width:1040px;
+  column-gap:0;
 }
 
 .resultsShell{
@@ -877,6 +878,8 @@ select{
   align-items:center;
   justify-content:center;
   gap:6px;
+  padding:0 8px;
+  text-align:center;
 }
 
 .resultsSortBtn::after{
@@ -901,6 +904,20 @@ select{
   padding:0 18px;
   color:#e2e8f0;
   font-size:14px;
+}
+
+.resultsRow > div{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:0 8px;
+}
+
+.resultsRow > .resultsPlayer{
+  justify-content:flex-start;
+  text-align:left;
 }
 
 .resultsPlayer,
@@ -993,9 +1010,7 @@ select{
   .v2Header,
   .version2Row,
   .v3Header,
-  .version3Row,
-  .resultsHeader,
-  .resultsRow{
+  .version3Row{
     grid-template-columns:1fr;
   }
 
