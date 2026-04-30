@@ -24,11 +24,11 @@
     </div>
 
     <nav class="tabs" aria-label="Ratings tabs">
-      <button class="tabButton active" data-tab="homeTab">HOME</button>
-      <button class="tabButton" data-tab="version1Tab">VERSION 1</button>
-      <button class="tabButton" data-tab="version2Tab">VERSION 2</button>
-      <button class="tabButton" data-tab="version3Tab">VERSION 3</button>
-      <button class="tabButton" data-tab="resultsTab">RESULTS</button>
+      <button class="tabButton active" data-tab="homeTab" data-mobile-label="HOME">HOME</button>
+      <button class="tabButton" data-tab="version1Tab" data-mobile-label="V1">VERSION 1</button>
+      <button class="tabButton" data-tab="version2Tab" data-mobile-label="V2">VERSION 2</button>
+      <button class="tabButton" data-tab="version3Tab" data-mobile-label="V3">VERSION 3</button>
+      <button class="tabButton" data-tab="resultsTab" data-mobile-label="RESULTS">RESULTS</button>
     </nav>
   </header>
 
@@ -165,9 +165,21 @@
         <div>
           <div class="sectionKicker">RESULTS</div>
           <h2>Compare Final Outcomes</h2>
-          <p>See how each rating method ranks the same players.</p>
+          <p>See each method's average, median, and the Version 3 weighted score.</p>
         </div>
         <button id="refreshResultsBtn" class="smallBtn">REFRESH RESULTS</button>
+      </div>
+
+      <div class="weightsPanel">
+        <div class="weightsTitle">VERSION 3 WEIGHTS</div>
+        <div class="weightsGrid">
+          <span>Combat Skills <strong>22%</strong></span>
+          <span>Movement / Speed <strong>18%</strong></span>
+          <span>Map Awareness <strong>18%</strong></span>
+          <span>Decision Making <strong>17%</strong></span>
+          <span>Team Impact <strong>15%</strong></span>
+          <span>Communication <strong>10%</strong></span>
+        </div>
       </div>
 
       <div class="resultsShell">
@@ -176,21 +188,31 @@
           <div class="mobileResultsSortControls">
             <select id="mobileResultsSortSelect">
               <option value="player">Player</option>
-              <option value="v1">Version 1</option>
-              <option value="v2">Version 2</option>
-              <option value="v3">Version 3</option>
-              <option value="average">Average</option>
+              <option value="v1Avg">V1 Average</option>
+              <option value="v1Med">V1 Median</option>
+              <option value="v2Avg">V2 Average</option>
+              <option value="v2Med">V2 Median</option>
+              <option value="v3Avg">V3 Average</option>
+              <option value="v3Med">V3 Median</option>
+              <option value="overallAvg">Overall Average</option>
+              <option value="overallMed">Overall Median</option>
+              <option value="weighted">V3 Weighted</option>
             </select>
-            <button id="mobileResultsSortDirection" type="button" class="mobileSortDirection">▲</button>
+            <button id="mobileResultsSortDirection" type="button" class="mobileSortDirection">&#9650;</button>
           </div>
         </div>
 
         <div class="resultsHeader">
           <button type="button" class="resultsSortBtn" data-sort="player">PLAYER</button>
-          <button type="button" class="resultsSortBtn" data-sort="v1">VERSION 1</button>
-          <button type="button" class="resultsSortBtn" data-sort="v2">VERSION 2</button>
-          <button type="button" class="resultsSortBtn" data-sort="v3">VERSION 3</button>
-          <button type="button" class="resultsSortBtn" data-sort="average">AVERAGE</button>
+          <button type="button" class="resultsSortBtn" data-sort="v1Avg">V1 AVG</button>
+          <button type="button" class="resultsSortBtn" data-sort="v1Med">V1 MED</button>
+          <button type="button" class="resultsSortBtn" data-sort="v2Avg">V2 AVG</button>
+          <button type="button" class="resultsSortBtn" data-sort="v2Med">V2 MED</button>
+          <button type="button" class="resultsSortBtn" data-sort="v3Avg">V3 AVG</button>
+          <button type="button" class="resultsSortBtn" data-sort="v3Med">V3 MED</button>
+          <button type="button" class="resultsSortBtn" data-sort="overallAvg">OVERALL AVG</button>
+          <button type="button" class="resultsSortBtn" data-sort="overallMed">OVERALL MED</button>
+          <button type="button" class="resultsSortBtn" data-sort="weighted">V3 WEIGHTED</button>
         </div>
         <div id="resultsRows"></div>
       </div>
