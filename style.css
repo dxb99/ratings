@@ -463,30 +463,30 @@ select{
 .ratingSlider{
   width:100%;
   accent-color:#3b82f6;
-  height:16px;
+  height:12px;
 }
 
 .ratingSlider::-webkit-slider-runnable-track{
-  height:4px;
+  height:2px;
   border-radius:999px;
   background:rgba(148,163,184,0.42);
 }
 
 .ratingSlider::-webkit-slider-thumb{
-  width:16px;
-  height:16px;
-  margin-top:-6px;
+  width:13px;
+  height:13px;
+  margin-top:-5.5px;
 }
 
 .ratingSlider::-moz-range-track{
-  height:4px;
+  height:2px;
   border-radius:999px;
   background:rgba(148,163,184,0.42);
 }
 
 .ratingSlider::-moz-range-thumb{
-  width:16px;
-  height:16px;
+  width:13px;
+  height:13px;
 }
 
 .categoriesGrid{
