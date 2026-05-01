@@ -210,6 +210,7 @@ main{
 .raterCard,
 .ratingTableShell,
 .infoBar,
+.applyRatingsPanel,
 .weightsPanel,
 .resultsShell,
 .statusShell{
@@ -943,8 +944,8 @@ select{
 
 .resultsHeader,
 .resultsRow{
-  grid-template-columns:minmax(150px, 1.35fr) repeat(9, minmax(96px, 1fr));
-  min-width:1040px;
+  grid-template-columns:minmax(150px, 1.35fr) repeat(7, minmax(96px, 1fr));
+  min-width:860px;
   column-gap:0;
 }
 
@@ -1029,9 +1030,42 @@ select{
   border:1px solid rgba(239,68,68,0.34);
 }
 
+.applyRatingsPanel,
 .weightsPanel{
   padding:16px 18px;
   margin-bottom:18px;
+}
+
+.applyRatingsPanel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.applyRatingsPanel p{
+  margin:0;
+  color:#cbd5e1;
+  font-size:13px;
+}
+
+.applyRatingsControls{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.applyRatingsControls select{
+  min-height:42px;
+  min-width:220px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:#0f172a;
+  color:#ffffff;
+  padding:0 12px;
+  font-weight:800;
 }
 
 .weightsTitle{
@@ -1132,8 +1166,7 @@ select{
   text-align:left;
 }
 
-.resultsPlayer,
-.resultsAverage{
+.resultsPlayer{
   font-weight:900;
   color:#ffffff;
 }
@@ -1205,6 +1238,21 @@ select{
     align-items:flex-start;
     flex-direction:column;
     gap:10px;
+  }
+
+  .applyRatingsPanel{
+    align-items:stretch;
+    flex-direction:column;
+  }
+
+  .applyRatingsControls{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .applyRatingsControls select,
+  .applyRatingsControls .smallBtn{
+    width:100%;
   }
 
   .sectionHeader h2{
@@ -1327,7 +1375,7 @@ select{
     text-transform:uppercase;
   }
 
-  .resultsRow > div:not(.resultsPlayer):not(.resultsAverage){
+  .resultsRow > div:not(.resultsPlayer){
     color:#e2e8f0;
     font-weight:700;
   }
