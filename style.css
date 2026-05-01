@@ -251,6 +251,59 @@ main{
   margin:0 auto;
 }
 
+.homeInfoPad{
+  width:min(880px, 100%);
+  margin:26px auto 0 auto;
+  padding:18px;
+  border-radius:14px;
+  background:rgba(37,99,235,0.10);
+  border:1px solid rgba(96,165,250,0.22);
+  text-align:left;
+}
+
+.homeInfoTitle{
+  color:#facc15;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:1px;
+  text-align:center;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.homeInfoPad p{
+  max-width:760px;
+  text-align:center;
+}
+
+.homeInfoExamples{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.homeInfoExamples div{
+  padding:12px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.homeInfoExamples strong{
+  display:block;
+  color:#ffffff;
+  font-size:13px;
+  margin-bottom:5px;
+}
+
+.homeInfoExamples span{
+  display:block;
+  color:#cbd5e1;
+  font-size:13px;
+  line-height:1.35;
+}
+
 .versionButtons{
   margin-top:34px;
   display:grid;
@@ -1087,7 +1140,8 @@ select{
 
   .versionButtons,
   .categoriesGrid,
-  .weightsGrid{
+  .weightsGrid,
+  .homeInfoExamples{
     grid-template-columns:1fr;
   }
 
