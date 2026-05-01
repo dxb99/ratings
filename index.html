@@ -40,25 +40,30 @@
         <h2>Choose a rating method:</h2>
         <p>Each version writes to the Ratings sheet. The Results tab compares the final player scores from all three methods.</p>
 
-        <div class="homeInfoPad">
-          <div class="homeInfoTitle">How Scoring Works</div>
-          <p>Scores are calculated only from submitted ratings. Players who do not vote are ignored for that version and are not counted as zero.</p>
-          <div class="homeInfoExamples">
-            <div>
-              <strong>Version 1</strong>
-              <span>If 5 players submit overall scores of 8, 7, 9, 6, and 8, the average is 7.6 based on those 5 votes only.</span>
-            </div>
-            <div>
-              <strong>Version 2</strong>
-              <span>If only 4 players submit Blitz, Elimination, and CTF ratings, that version uses only those 4 submissions.</span>
-            </div>
-            <div>
-              <strong>Version 3</strong>
-              <span>The weighted score uses only submitted breakdown ratings. Non-voters do not lower the weighted score.</span>
-            </div>
-            <div>
-              <strong>Overall Results</strong>
-              <span>Overall average and median use whichever version results exist for that player.</span>
+        <button id="homeInfoBtn" class="homeInfoBtn" type="button">i</button>
+
+        <div id="homeInfoPanel" class="homeInfoPanel">
+          <div class="homeInfoPad">
+            <button id="homeInfoCloseBtn" class="homeInfoCloseBtn" type="button">x</button>
+            <div class="homeInfoTitle">How Scoring Works</div>
+            <p>Scores are calculated only from submitted ratings. Players who do not vote are ignored for that version and are not counted as zero.</p>
+            <div class="homeInfoExamples">
+              <div>
+                <strong>Version 1</strong>
+                <span>If 5 players submit overall scores of 8, 7, 9, 6, and 8, the average is 7.6 based on those 5 votes only.</span>
+              </div>
+              <div>
+                <strong>Version 2</strong>
+                <span>If only 4 players submit Blitz, Elimination, and CTF ratings, that version uses only those 4 submissions.</span>
+              </div>
+              <div>
+                <strong>Version 3</strong>
+                <span>The weighted score uses only submitted breakdown ratings. Non-voters do not lower the weighted score.</span>
+              </div>
+              <div>
+                <strong>Overall Results</strong>
+                <span>Overall average and median use whichever version results exist for that player.</span>
+              </div>
             </div>
           </div>
         </div>
