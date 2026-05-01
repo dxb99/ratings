@@ -1210,6 +1210,20 @@ select{
   color:#f8fafc;
 }
 
+.modalInput{
+  width:100%;
+  min-height:42px;
+  margin:0 0 16px 0;
+  padding:0 12px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,0.14);
+  background:#0f172a;
+  color:#ffffff;
+  font:inherit;
+  text-align:center;
+  display:none;
+}
+
 .modalButtons{
   display:flex;
   justify-content:center;
