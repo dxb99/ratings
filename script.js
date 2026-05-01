@@ -14,6 +14,7 @@ let currentResultsSort = {
   key: "player",
   direction: "asc"
 };
+let busyActive = false;
 
 const scaleOptions = [
   { label: "Low", value: 0 },
@@ -96,12 +97,16 @@ async function api(data){
 function showBusy(text = "WORKING"){
   const overlay = document.getElementById("busyOverlay");
   const busyText = document.getElementById("busyText");
+  busyActive = true;
   busyText.innerHTML = `${text}<span class="dots"></span>`;
   overlay.style.display = "flex";
+  document.body.classList.add("busyActive");
 }
 
 function hideBusy(){
+  busyActive = false;
   document.getElementById("busyOverlay").style.display = "none";
+  document.body.classList.remove("busyActive");
 }
 
 function showModal(message, type = "alert", withInput = false, inputType = "password", inputPlaceholder = "Enter password"){
@@ -142,7 +147,10 @@ function showModal(message, type = "alert", withInput = false, inputType = "pass
 
 function setupTabs(){
   document.querySelectorAll("[data-tab]").forEach(btn => {
-    btn.addEventListener("click", () => showTab(btn.dataset.tab));
+    btn.addEventListener("click", () => {
+      if(busyActive) return;
+      showTab(btn.dataset.tab);
+    });
   });
 }
 
@@ -311,6 +319,8 @@ function updateRatingsLockUi(){
 }
 
 async function refreshResults(){
+  if(busyActive) return;
+
   showBusy("REFRESHING");
 
   try{
@@ -321,6 +331,10 @@ async function refreshResults(){
     }
 
     latestResults = data.results || {};
+    if(typeof data.ratingsLocked !== "undefined"){
+      ratingsLocked = !!data.ratingsLocked;
+      updateRatingsLockUi();
+    }
     renderResults();
   }catch(err){
     await showModal(err.message || "Could not refresh results.", "alert");
@@ -330,6 +344,8 @@ async function refreshResults(){
 }
 
 async function refreshStatus(){
+  if(busyActive) return;
+
   showBusy("REFRESHING STATUS");
 
   try{
@@ -365,6 +381,8 @@ async function requestAdminPassword(message){
 }
 
 async function toggleRatingsLock(){
+  if(busyActive) return;
+
   const nextLocked = !ratingsLocked;
   const actionLabel = nextLocked ? "lock" : "unlock";
   const confirmed = await showModal(
@@ -570,6 +588,8 @@ function bindNumericSliders(container){
 }
 
 async function resetVersion(version){
+  if(busyActive) return;
+
   const confirmed = await showModal(
     `Clear the Version ${version} form on this screen? Saved ratings in the sheet will not be deleted.`,
     "confirm"
@@ -581,6 +601,8 @@ async function resetVersion(version){
 }
 
 async function clearSavedVersion(version){
+  if(busyActive) return;
+
   if(ratingsLocked){
     await showModal("Ratings are locked. Ask an admin to unlock ratings first.", "alert");
     return;
@@ -752,6 +774,8 @@ function rerenderVersion(version){
 }
 
 async function handleRaterChange(rater){
+  if(busyActive) return;
+
   if(!rater) return;
 
   setAllRaterSelects(rater);
@@ -919,6 +943,8 @@ function collectVersion(version){
 }
 
 async function submitVersion(version){
+  if(busyActive) return;
+
   if(ratingsLocked){
     await showModal("Ratings are locked. Ask an admin to unlock ratings first.", "alert");
     return;
@@ -1055,6 +1081,8 @@ function getFinalRatingMethodLabel(method){
 }
 
 async function applyFinalRatingsToPlayers(){
+  if(busyActive) return;
+
   const select = document.getElementById("finalRatingMethodSelect");
   const method = select ? select.value : "";
   const label = getFinalRatingMethodLabel(method);
