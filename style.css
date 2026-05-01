@@ -836,7 +836,7 @@ select{
 
 .statusHeader{
   min-height:58px;
-  padding:0 18px;
+  padding:0;
   background:rgba(255,255,255,0.035);
   color:#cbd5e1;
   font-size:12px;
@@ -847,11 +847,12 @@ select{
 
 .statusRow{
   min-height:56px;
-  padding:0 18px;
+  padding:0;
   color:#e2e8f0;
   font-size:14px;
 }
 
+.statusHeader > div,
 .statusRow > div{
   min-width:0;
   display:flex;
@@ -861,9 +862,19 @@ select{
   padding:0 8px;
 }
 
+.statusHeader > div:first-child,
 .statusRow > .statusPlayer{
   justify-content:flex-start;
   text-align:left;
+  padding-left:18px;
+}
+
+.statusHeader > div:last-child,
+.statusRow > div:last-child{
+  padding-right:18px;
+}
+
+.statusRow > .statusPlayer{
   font-weight:900;
   color:#ffffff;
 }
