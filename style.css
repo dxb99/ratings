@@ -261,7 +261,7 @@ main{
 }
 
 .homeInfoBtn{
-  min-height:42px;
+  height:42px;
   margin-top:18px;
   padding:0 16px 0 12px;
   border:1px solid rgba(96,165,250,0.42);
@@ -289,11 +289,21 @@ main{
 }
 
 .sectionActions{
-  display:flex;
+  display:grid;
+  grid-template-columns:180px 180px;
   align-items:center;
   justify-content:flex-end;
   gap:10px;
-  flex-wrap:wrap;
+}
+
+.sectionActions .homeInfoBtn,
+.sectionActions .smallBtn{
+  width:100%;
+  height:42px;
+  margin:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .homeInfoIcon{
@@ -972,8 +982,8 @@ select{
 }
 
 .ratingsLockBtn{
-  background:#101827;
-  border:1px solid rgba(96,165,250,0.42);
+  background:#1d4ed8;
+  border:none;
 }
 
 .ratingsLockBtn.ratingsLocked{
