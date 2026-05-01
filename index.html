@@ -51,23 +51,23 @@
           <div class="homeInfoPad">
             <button id="homeInfoCloseBtn" class="homeInfoCloseBtn" type="button">x</button>
             <div class="homeInfoTitle">How Scoring Works</div>
-            <p>Scores are calculated only from submitted ratings. Players who do not vote are ignored for that version and are not counted as zero.</p>
+            <p>Scores are calculated only from submitted ratings. Missing votes are ignored and are not counted as zero.</p>
             <div class="homeInfoExamples">
               <div>
-                <strong>Version 1</strong>
-                <span>If 5 players submit overall scores of 8, 7, 9, 6, and 8, the average is 7.6 based on those 5 votes only.</span>
+                <strong>Average</strong>
+                <span>Add the submitted scores, then divide by how many scores were submitted. Example: 8, 7, 9, 6, 8 = 38 total. 38 / 5 votes = 7.6 average.</span>
               </div>
               <div>
-                <strong>Version 2</strong>
-                <span>If only 4 players submit Blitz, Elimination, and CTF ratings, that version uses only those 4 submissions.</span>
+                <strong>Median</strong>
+                <span>Sort the scores from lowest to highest and take the middle. Example: 5, 6, 7, 8, 10 gives a median of 7. With 6, 7, 8, 9, the median is halfway between 7 and 8, so it is 7.5.</span>
               </div>
               <div>
-                <strong>Version 3</strong>
-                <span>The weighted score uses only submitted breakdown ratings. Non-voters do not lower the weighted score.</span>
+                <strong>Weighted Score</strong>
+                <span>Version 3 gives each category a different importance. Example: Combat 10 counts more than Communication 10 because Combat is weighted 22% and Communication is weighted 10%.</span>
               </div>
               <div>
-                <strong>Overall Results</strong>
-                <span>Overall average and median use whichever version results exist for that player.</span>
+                <strong>Weighted Example</strong>
+                <span>If every Version 3 category is 8, the weighted score is also 8. If Combat and Movement are high but Communication is lower, the final score stays strong because gameplay impact has more weight.</span>
               </div>
             </div>
           </div>
