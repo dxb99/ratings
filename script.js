@@ -9,6 +9,7 @@ let savedSubmissionState = {
   2: false,
   3: false
 };
+let ratingsLocked = false;
 let currentResultsSort = {
   key: "player",
   direction: "asc"
@@ -177,6 +178,7 @@ function setupButtons(){
   document.getElementById("clearSavedVersion3Btn").onclick = () => clearSavedVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
   document.getElementById("refreshStatusBtn").onclick = refreshStatus;
+  document.getElementById("ratingsLockToggleBtn").onclick = toggleRatingsLock;
   document.getElementById("applyFinalRatingsBtn").onclick = applyFinalRatingsToPlayers;
   setupResultsSorting();
 
@@ -265,10 +267,12 @@ async function loadInitialData(){
   allPlayers = data.players || [];
   latestResults = data.results || {};
   latestStatus = data.status || [];
+  ratingsLocked = !!data.ratingsLocked;
   renderAllVersions();
   renderResults();
   renderStatus();
   updateSubmitButtons();
+  updateRatingsLockUi();
 }
 
 function setAllRaterSelects(rater){
@@ -289,8 +293,21 @@ function updateSubmitButtons(){
       ? `UPDATE VERSION ${version}`
       : `SUBMIT VERSION ${version}`;
 
+    btn.disabled = ratingsLocked;
+    clearSavedBtn.disabled = ratingsLocked;
     clearSavedBtn.style.display = savedSubmissionState[version] ? "inline-flex" : "none";
   });
+}
+
+function updateRatingsLockUi(){
+  const lockBtn = document.getElementById("ratingsLockToggleBtn");
+
+  if(lockBtn){
+    lockBtn.textContent = ratingsLocked ? "UNLOCK RATINGS" : "LOCK RATINGS";
+    lockBtn.classList.toggle("ratingsLocked", ratingsLocked);
+  }
+
+  updateSubmitButtons();
 }
 
 async function refreshResults(){
@@ -323,9 +340,62 @@ async function refreshStatus(){
     }
 
     latestStatus = data.status || [];
+    if(typeof data.ratingsLocked !== "undefined"){
+      ratingsLocked = !!data.ratingsLocked;
+      updateRatingsLockUi();
+    }
     renderStatus();
   }catch(err){
     await showModal(err.message || "Could not refresh status.", "alert");
+  }finally{
+    hideBusy();
+  }
+}
+
+async function requestAdminPassword(message){
+  const password = await showModal(
+    message,
+    "confirm",
+    true,
+    "password",
+    "Admin password"
+  );
+
+  return password || null;
+}
+
+async function toggleRatingsLock(){
+  const nextLocked = !ratingsLocked;
+  const actionLabel = nextLocked ? "lock" : "unlock";
+  const confirmed = await showModal(
+    `${nextLocked ? "Lock" : "Unlock"} ratings?`,
+    "confirm"
+  );
+
+  if(!confirmed) return;
+
+  const password = await requestAdminPassword(`Enter admin password to ${actionLabel} ratings.`);
+  if(!password) return;
+
+  showBusy(nextLocked ? "LOCKING" : "UNLOCKING");
+
+  try{
+    const res = await api({
+      action: "setRatingsLock",
+      locked: nextLocked,
+      password: password
+    });
+
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || "Could not update ratings lock");
+    }
+
+    ratingsLocked = !!res.ratingsLocked;
+    updateRatingsLockUi();
+
+    await showModal(ratingsLocked ? "Ratings are now locked." : "Ratings are now unlocked.", "alert");
+  }catch(err){
+    await showModal(err.message || "Could not update ratings lock.", "alert");
   }finally{
     hideBusy();
   }
@@ -511,6 +581,11 @@ async function resetVersion(version){
 }
 
 async function clearSavedVersion(version){
+  if(ratingsLocked){
+    await showModal("Ratings are locked. Ask an admin to unlock ratings first.", "alert");
+    return;
+  }
+
   const rater = getRaterForVersion(version);
 
   if(!rater){
@@ -844,6 +919,11 @@ function collectVersion(version){
 }
 
 async function submitVersion(version){
+  if(ratingsLocked){
+    await showModal("Ratings are locked. Ask an admin to unlock ratings first.", "alert");
+    return;
+  }
+
   const data = collectVersion(version);
 
   if(!data.ok){
@@ -991,13 +1071,7 @@ async function applyFinalRatingsToPlayers(){
 
   if(!confirmed) return;
 
-  const password = await showModal(
-    "Enter admin password to apply ratings.",
-    "confirm",
-    true,
-    "password",
-    "Admin password"
-  );
+  const password = await requestAdminPassword("Enter admin password to apply ratings.");
 
   if(!password) return;
 
