@@ -213,6 +213,7 @@
         </div>
         <div class="applyRatingsControls">
           <select id="finalRatingMethodSelect">
+            <option value="" selected disabled>Select rating method</option>
             <option value="v1Avg">Version 1 Average</option>
             <option value="v1Med">Version 1 Median</option>
             <option value="v2Avg">Version 2 Average</option>
@@ -309,6 +310,7 @@
 <div id="customModal" class="modalOverlay">
   <div class="modalBox">
     <div id="modalMessage" class="modalMessage"></div>
+    <input id="modalInput" class="modalInput" type="password" placeholder="Enter password">
     <div class="modalButtons">
       <button id="modalCancel" class="btn btn-red modalIconBtn">x</button>
       <button id="modalConfirm" class="btn btn-green modalIconBtn">✓</button>
