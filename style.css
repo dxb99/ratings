@@ -1155,6 +1155,7 @@ select{
   }
 
   .resultsRow{
+    grid-template-columns:1fr;
     min-width:0;
     gap:10px;
     padding:16px;
@@ -1171,6 +1172,13 @@ select{
     gap:12px;
     padding:8px 0;
     border-bottom:1px solid rgba(255,255,255,0.07);
+    text-align:right;
+  }
+
+  .resultsRow > .resultsPlayer{
+    justify-content:space-between;
+    text-align:right;
+    padding-left:0;
   }
 
   .resultsRow > div:last-child{
