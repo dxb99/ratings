@@ -169,6 +169,9 @@ function setupButtons(){
   const infoBtn = document.getElementById("infoBtn");
   const infoPanel = document.getElementById("infoPanel");
   const closeBtn = document.getElementById("infoCloseBtn");
+  const homeInfoBtn = document.getElementById("homeInfoBtn");
+  const homeInfoPanel = document.getElementById("homeInfoPanel");
+  const homeInfoCloseBtn = document.getElementById("homeInfoCloseBtn");
 
   infoBtn.onclick = e => {
     e.stopPropagation();
@@ -183,6 +186,22 @@ function setupButtons(){
   infoPanel.onclick = e => {
     if(e.target === infoPanel) infoPanel.classList.remove("show");
   };
+
+  if(homeInfoBtn && homeInfoPanel && homeInfoCloseBtn){
+    homeInfoBtn.onclick = e => {
+      e.stopPropagation();
+      homeInfoPanel.classList.add("show");
+    };
+
+    homeInfoCloseBtn.onclick = e => {
+      e.stopPropagation();
+      homeInfoPanel.classList.remove("show");
+    };
+
+    homeInfoPanel.onclick = e => {
+      if(e.target === homeInfoPanel) homeInfoPanel.classList.remove("show");
+    };
+  }
 }
 
 function setupResultsSorting(){
