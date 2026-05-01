@@ -103,16 +103,29 @@ function hideBusy(){
   document.getElementById("busyOverlay").style.display = "none";
 }
 
-function showModal(message, type = "alert"){
+function showModal(message, type = "alert", withInput = false, inputType = "password", inputPlaceholder = "Enter password"){
   return new Promise(resolve => {
     const modal = document.getElementById("customModal");
     const msg = document.getElementById("modalMessage");
     const confirmBtn = document.getElementById("modalConfirm");
     const cancelBtn = document.getElementById("modalCancel");
+    const input = document.getElementById("modalInput");
 
     msg.textContent = message;
     cancelBtn.style.display = type === "alert" ? "none" : "inline-flex";
+
+    if(input){
+      input.style.display = withInput ? "block" : "none";
+      input.type = inputType;
+      input.placeholder = inputPlaceholder;
+      input.value = "";
+    }
+
     modal.style.display = "flex";
+
+    if(withInput && input){
+      setTimeout(() => input.focus(), 0);
+    }
 
     const cleanup = value => {
       modal.style.display = "none";
@@ -121,7 +134,7 @@ function showModal(message, type = "alert"){
       resolve(value);
     };
 
-    confirmBtn.onclick = () => cleanup(true);
+    confirmBtn.onclick = () => cleanup(withInput && input ? input.value : true);
     cancelBtn.onclick = () => cleanup(null);
   });
 }
@@ -966,6 +979,11 @@ async function applyFinalRatingsToPlayers(){
   const method = select ? select.value : "";
   const label = getFinalRatingMethodLabel(method);
 
+  if(!method){
+    await showModal("Select a rating method before applying ratings.", "alert");
+    return;
+  }
+
   const confirmed = await showModal(
     `Apply ${label} to the Players sheet? A backup will be created first.`,
     "confirm"
@@ -973,12 +991,23 @@ async function applyFinalRatingsToPlayers(){
 
   if(!confirmed) return;
 
+  const password = await showModal(
+    "Enter admin password to apply ratings.",
+    "confirm",
+    true,
+    "password",
+    "Admin password"
+  );
+
+  if(!password) return;
+
   showBusy("APPLYING");
 
   try{
     const res = await api({
       action: "applyFinalRatingsToPlayers",
-      method: method
+      method: method,
+      password: password
     });
 
     if(!res || !res.ok){
