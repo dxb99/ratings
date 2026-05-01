@@ -871,13 +871,25 @@ async function submitVersion(version){
 }
 
 function formatScore(value){
+  if(value === "" || value === null || typeof value === "undefined"){
+    return "-";
+  }
+
   const numberValue = Number(value);
+
   if(Number.isNaN(numberValue)) return "-";
+
   return Number.isInteger(numberValue) ? String(numberValue) : numberValue.toFixed(1);
 }
 
 function averageScores(values){
-  const cleaned = values.filter(value => value !== null && !Number.isNaN(value));
+  const cleaned = values
+    .map(value => {
+      if(value === "" || value === null || typeof value === "undefined") return null;
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? null : numberValue;
+    })
+    .filter(value => value !== null);
 
   if(!cleaned.length) return null;
 
@@ -886,7 +898,12 @@ function averageScores(values){
 
 function medianScore(values){
   const cleaned = values
-    .filter(value => value !== null && !Number.isNaN(value))
+    .map(value => {
+      if(value === "" || value === null || typeof value === "undefined") return null;
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? null : numberValue;
+    })
+    .filter(value => value !== null)
     .slice()
     .sort((a, b) => a - b);
 
@@ -912,6 +929,10 @@ function getResultItem(playerName, version){
 function getResultNumber(item, key){
   if(!item) return null;
 
+  if(item[key] === "" || item[key] === null || typeof item[key] === "undefined"){
+    return null;
+  }
+
   const value = Number(item[key]);
 
   return Number.isNaN(value) ? null : value;
@@ -922,7 +943,7 @@ function getResultAverage(item){
 }
 
 function getResultMedian(item){
-  return getResultNumber(item, "medianRating") ?? getResultAverage(item);
+  return getResultNumber(item, "medianRating");
 }
 
 function updateResultsSortHeaders(){
