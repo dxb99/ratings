@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DXB99 Ratings Lab</title>
-  <link rel="stylesheet" href="style.css">
+  <script>
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = "style.css?v=" + new Date().getTime();
+    document.head.appendChild(style);
+  </script>
 </head>
 <body>
 
@@ -294,6 +299,10 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  const script = document.createElement("script");
+  script.src = "script.js?v=" + new Date().getTime();
+  document.body.appendChild(script);
+</script>
 </body>
 </html>
