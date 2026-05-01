@@ -164,6 +164,7 @@ function setupButtons(){
   document.getElementById("clearSavedVersion3Btn").onclick = () => clearSavedVersion(3);
   document.getElementById("refreshResultsBtn").onclick = refreshResults;
   document.getElementById("refreshStatusBtn").onclick = refreshStatus;
+  document.getElementById("applyFinalRatingsBtn").onclick = applyFinalRatingsToPlayers;
   setupResultsSorting();
 
   const infoBtn = document.getElementById("infoBtn");
@@ -946,6 +947,63 @@ function getResultMedian(item){
   return getResultNumber(item, "medianRating");
 }
 
+function getFinalRatingMethodLabel(method){
+  const labels = {
+    v1Avg: "Version 1 Average",
+    v1Med: "Version 1 Median",
+    v2Avg: "Version 2 Average",
+    v2Med: "Version 2 Median",
+    v3Avg: "Version 3 Average",
+    v3Med: "Version 3 Median",
+    weighted: "Version 3 Weighted"
+  };
+
+  return labels[method] || method;
+}
+
+async function applyFinalRatingsToPlayers(){
+  const select = document.getElementById("finalRatingMethodSelect");
+  const method = select ? select.value : "";
+  const label = getFinalRatingMethodLabel(method);
+
+  const confirmed = await showModal(
+    `Apply ${label} to the Players sheet? A backup will be created first.`,
+    "confirm"
+  );
+
+  if(!confirmed) return;
+
+  showBusy("APPLYING");
+
+  try{
+    const res = await api({
+      action: "applyFinalRatingsToPlayers",
+      method: method
+    });
+
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || "Could not apply ratings");
+    }
+
+    allPlayers = res.players || allPlayers;
+    latestResults = res.results || latestResults;
+    latestStatus = res.status || latestStatus;
+
+    renderAllVersions();
+    renderResults();
+    renderStatus();
+
+    await showModal(
+      `Players sheet updated using ${res.methodLabel || label}. Backup created: ${res.backupSheet}.`,
+      "alert"
+    );
+  }catch(err){
+    await showModal(err.message || "Could not apply final ratings.", "alert");
+  }finally{
+    hideBusy();
+  }
+}
+
 function updateResultsSortHeaders(){
   document.querySelectorAll(".resultsSortBtn").forEach(btn => {
     const isActive = btn.dataset.sort === currentResultsSort.key;
@@ -994,8 +1052,6 @@ function buildResultRows(){
         v2Med: versionMedians[1],
         v3Avg: versionAverages[2],
         v3Med: versionMedians[2],
-        overallAvg: averageScores(versionAverages),
-        overallMed: medianScore(versionMedians),
         weighted: getResultNumber(v3, "weightedScore")
       };
     });
@@ -1053,8 +1109,6 @@ function renderResults(){
         <div data-label="V2 Median">${formatScore(player.v2Med)}</div>
         <div data-label="V3 Average">${formatScore(player.v3Avg)}</div>
         <div data-label="V3 Median">${formatScore(player.v3Med)}</div>
-        <div class="resultsAverage" data-label="Overall Average">${formatScore(player.overallAvg)}</div>
-        <div data-label="Overall Median">${formatScore(player.overallMed)}</div>
         <div data-label="V3 Weighted">${formatScore(player.weighted)}</div>
       `;
       container.appendChild(row);
