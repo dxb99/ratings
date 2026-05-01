@@ -382,6 +382,31 @@ main{
   line-height:1.45;
 }
 
+.infoWeightsList{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:6px;
+}
+
+.infoWeightsList span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:7px 9px;
+  border-radius:8px;
+  background:rgba(37,99,235,0.16);
+  border:1px solid rgba(96,165,250,0.20);
+  color:#dbeafe;
+  font-size:12px;
+  font-weight:800;
+}
+
+.infoWeightsList strong{
+  color:#facc15;
+}
+
 .versionButtons{
   margin-top:34px;
   display:grid;
@@ -1280,6 +1305,7 @@ select{
   .versionButtons,
   .categoriesGrid,
   .weightsGrid,
+  .infoWeightsList,
   .homeInfoExamples{
     grid-template-columns:1fr;
   }
