@@ -45,7 +45,10 @@
         <h2>Choose a rating method:</h2>
         <p>Each version writes to the Ratings sheet. The Results tab compares the final player scores from all three methods.</p>
 
-        <button id="homeInfoBtn" class="homeInfoBtn" type="button">i</button>
+        <button id="homeInfoBtn" class="homeInfoBtn" type="button">
+          <span class="homeInfoIcon">i</span>
+          <span>How scoring works</span>
+        </button>
 
         <div id="homeInfoPanel" class="homeInfoPanel">
           <div class="homeInfoPad">
@@ -55,19 +58,15 @@
             <div class="homeInfoExamples">
               <div>
                 <strong>Average</strong>
-                <span>Add the submitted scores, then divide by how many scores were submitted. Example: 8, 7, 9, 6, 8 = 38 total. 38 / 5 votes = 7.6 average.</span>
+                <span>Average means the normal score after everyone who voted is added together. First, add the scores. Then divide by how many people voted. Example: if a player gets 8, 7, 9, 6, and 8, the total is 38. Since 5 people voted, 38 / 5 = 7.6. So the average is 7.6.</span>
               </div>
               <div>
                 <strong>Median</strong>
-                <span>Sort the scores from lowest to highest and take the middle. Example: 5, 6, 7, 8, 10 gives a median of 7. With 6, 7, 8, 9, the median is halfway between 7 and 8, so it is 7.5.</span>
+                <span>Median means the middle score. Put the scores in order from lowest to highest, then look for the score in the middle. Example: 5, 6, 7, 8, 10 has 7 in the middle, so the median is 7. If there are two middle scores, use the number halfway between them. Example: 6, 7, 8, 9 has 7 and 8 in the middle, so the median is 7.5.</span>
               </div>
               <div>
                 <strong>Weighted Score</strong>
-                <span>Version 3 gives each category a different importance. Example: Combat 10 counts more than Communication 10 because Combat is weighted 22% and Communication is weighted 10%.</span>
-              </div>
-              <div>
-                <strong>Weighted Example</strong>
-                <span>If every Version 3 category is 8, the weighted score is also 8. If Combat and Movement are high but Communication is lower, the final score stays strong because gameplay impact has more weight.</span>
+                <span>Weighted score is only for Version 3. It means some categories count more than others. Combat Skills counts 22%, Movement / Speed counts 18%, Map Awareness counts 18%, Decision Making counts 17%, Team Impact counts 15%, and Communication counts 10%. Example: a 10 in Combat helps more than a 10 in Communication because Combat has more weight. If all six category scores are 8, the weighted score is also 8.</span>
               </div>
             </div>
           </div>
