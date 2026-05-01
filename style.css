@@ -290,7 +290,7 @@ main{
 
 .sectionActions{
   display:grid;
-  grid-template-columns:180px 180px;
+  grid-template-columns:220px 180px;
   align-items:center;
   justify-content:flex-end;
   gap:10px;
@@ -1118,7 +1118,7 @@ button:disabled{
 
 .applyRatingsControls{
   display:grid;
-  grid-template-columns:280px 150px 150px;
+  grid-template-columns:280px 220px 180px;
   align-items:center;
   justify-content:flex-end;
   gap:10px;
