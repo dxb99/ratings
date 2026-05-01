@@ -979,6 +979,12 @@ select{
   color:#ffffff;
 }
 
+.resultsHeader .resultsSortBtn:first-child{
+  justify-content:flex-start;
+  text-align:left;
+  padding-left:8px;
+}
+
 .resultsRow{
   min-height:54px;
   padding:0 18px;
@@ -1234,6 +1240,8 @@ select{
 
   .statusRow > .statusPlayer{
     justify-content:space-between;
+    padding-left:0;
+    text-align:right;
   }
 }
 
