@@ -294,6 +294,7 @@ main{
   align-items:center;
   justify-content:flex-end;
   gap:10px;
+  margin-right:18px;
 }
 
 .sectionActions .homeInfoBtn,
