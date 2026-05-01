@@ -971,6 +971,22 @@ select{
   background:#1d4ed8;
 }
 
+.ratingsLockBtn{
+  background:#101827;
+  border:1px solid rgba(96,165,250,0.42);
+}
+
+.ratingsLockBtn.ratingsLocked{
+  border-color:rgba(250,204,21,0.55);
+  box-shadow:0 0 14px rgba(250,204,21,0.18);
+}
+
+button:disabled{
+  cursor:not-allowed;
+  opacity:0.48;
+  filter:saturate(0.7);
+}
+
 .btn-green{
   background:#15803d;
 }
