@@ -261,11 +261,11 @@ main{
 }
 
 .homeInfoBtn{
-  min-height:38px;
+  min-height:42px;
   margin-top:18px;
-  padding:0 16px 0 10px;
+  padding:0 16px 0 12px;
   border:1px solid rgba(96,165,250,0.42);
-  border-radius:999px;
+  border-radius:9px;
   background:#101827;
   color:#ffffff;
   display:inline-flex;
@@ -285,7 +285,15 @@ main{
 }
 
 .resultsInfoBtn{
-  margin:0 0 18px 0;
+  margin:0;
+}
+
+.sectionActions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
 .homeInfoIcon{
@@ -1281,6 +1289,17 @@ select{
     align-items:flex-start;
     flex-direction:column;
     gap:10px;
+  }
+
+  .sectionActions{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .sectionActions .homeInfoBtn,
+  .sectionActions .smallBtn{
+    width:100%;
   }
 
   .applyRatingsPanel{
