@@ -206,6 +206,25 @@
         <button id="refreshResultsBtn" class="smallBtn">REFRESH RESULTS</button>
       </div>
 
+      <div class="applyRatingsPanel">
+        <div>
+          <div class="weightsTitle">OFFICIAL RATINGS</div>
+          <p>Choose one result method and update the Players sheet. A backup is created first.</p>
+        </div>
+        <div class="applyRatingsControls">
+          <select id="finalRatingMethodSelect">
+            <option value="v1Avg">Version 1 Average</option>
+            <option value="v1Med">Version 1 Median</option>
+            <option value="v2Avg">Version 2 Average</option>
+            <option value="v2Med">Version 2 Median</option>
+            <option value="v3Avg">Version 3 Average</option>
+            <option value="v3Med">Version 3 Median</option>
+            <option value="weighted">Version 3 Weighted</option>
+          </select>
+          <button id="applyFinalRatingsBtn" class="smallBtn">APPLY TO PLAYERS</button>
+        </div>
+      </div>
+
       <div class="weightsPanel">
         <div class="weightsTitle">VERSION 3 WEIGHTS</div>
         <div class="weightsGrid">
@@ -230,8 +249,6 @@
               <option value="v2Med">V2 Median</option>
               <option value="v3Avg">V3 Average</option>
               <option value="v3Med">V3 Median</option>
-              <option value="overallAvg">Overall Average</option>
-              <option value="overallMed">Overall Median</option>
               <option value="weighted">V3 Weighted</option>
             </select>
             <button id="mobileResultsSortDirection" type="button" class="mobileSortDirection">&#9650;</button>
@@ -246,8 +263,6 @@
           <button type="button" class="resultsSortBtn" data-sort="v2Med">V2 MED</button>
           <button type="button" class="resultsSortBtn" data-sort="v3Avg">V3 AVG</button>
           <button type="button" class="resultsSortBtn" data-sort="v3Med">V3 MED</button>
-          <button type="button" class="resultsSortBtn" data-sort="overallAvg">OVERALL AVG</button>
-          <button type="button" class="resultsSortBtn" data-sort="overallMed">OVERALL MED</button>
           <button type="button" class="resultsSortBtn" data-sort="weighted">V3 WEIGHTED</button>
         </div>
         <div id="resultsRows"></div>
