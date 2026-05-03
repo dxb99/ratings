@@ -145,6 +145,12 @@ function showModal(message, type = "alert", withInput = false, inputType = "pass
   });
 }
 
+const versionInfoMessages = {
+  1: "VERSION 1 uses one overall 0-10 score per player. It is the fastest method: each rater gives one final score for each player.",
+  2: "VERSION 2 uses three game mode scores: Elimination, Blitz, and CTF. Each rater's three mode scores are averaged into one Version 2 score for that player.",
+  3: "VERSION 3 uses six gameplay categories: Combat, Communication, Decision, Awareness, Movement, and Impact. Each rater's six category scores are averaged into one Version 3 score for that player."
+};
+
 function setupTabs(){
   document.querySelectorAll("[data-tab]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -196,6 +202,23 @@ function setupButtons(){
   const homeInfoBtn = document.getElementById("homeInfoBtn");
   const homeInfoPanel = document.getElementById("homeInfoPanel");
   const homeInfoCloseBtn = document.getElementById("homeInfoCloseBtn");
+
+  document.querySelectorAll("[data-version-info]").forEach(btn => {
+    const openVersionInfo = e => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const version = btn.dataset.versionInfo;
+      showModal(versionInfoMessages[version] || "No information available.", "alert");
+    };
+
+    btn.addEventListener("click", openVersionInfo);
+    btn.addEventListener("keydown", e => {
+      if(e.key === "Enter" || e.key === " "){
+        openVersionInfo(e);
+      }
+    });
+  });
 
   infoBtn.onclick = e => {
     e.stopPropagation();
