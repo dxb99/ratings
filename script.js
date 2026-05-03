@@ -67,15 +67,36 @@ window.addEventListener("load", async () => {
   try{
     setupTabs();
     setupButtons();
+    setupStartupRetry();
     await loadInitialData();
     document.getElementById("loadingScreen").style.display = "none";
     document.getElementById("app").classList.remove("hidden");
   }catch(err){
     console.error(err);
     document.getElementById("loadingScreen").style.display = "none";
-    await showModal("Startup error. Open console for details.", "alert");
+    showStartupError();
   }
 });
+
+function setupStartupRetry(){
+  const retryBtn = document.getElementById("startupRetryBtn");
+  if(!retryBtn) return;
+
+  retryBtn.onclick = () => {
+    window.location.reload();
+  };
+}
+
+function showStartupError(){
+  const errorScreen = document.getElementById("startupErrorScreen");
+  if(errorScreen){
+    errorScreen.style.display = "flex";
+  }
+}
+
+function getSaveFailedMessage(action){
+  return `${action} DID NOT COMPLETE\n\nThe server did not confirm this change. Please try again before leaving this page.`;
+}
 
 async function api(data){
   const controller = new AbortController();
@@ -730,9 +751,9 @@ async function clearSavedVersion(version){
     renderResults();
     renderStatus();
 
-    await showModal(`Saved Version ${version} ratings cleared. You can rate and submit this version again now.`, "alert");
+    await showModal(`SAVED DATA CLEARED\n\nVersion ${version} saved ratings were removed for ${rater}. You can rate and submit this version again now.`, "alert");
   }catch(err){
-    await showModal(err.message || `Could not clear saved Version ${version}.`, "alert");
+    await showModal(err.message || getSaveFailedMessage("CLEAR SAVED RATINGS"), "alert");
   }finally{
     hideBusy();
   }
@@ -1069,9 +1090,9 @@ async function submitVersion(version){
     updateSubmitButtons();
     renderResults();
     renderStatus();
-    await showModal(`Version ${version} ${doneLabel}. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
+    await showModal(`SAVED SUCCESSFULLY\n\nVersion ${version} ratings were ${doneLabel} for ${data.rater}. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
   }catch(err){
-    await showModal(err.message || `Could not submit Version ${version}.`, "alert");
+    await showModal(err.message || getSaveFailedMessage(`VERSION ${version} SAVE`), "alert");
   }finally{
     hideBusy();
   }
@@ -1212,11 +1233,11 @@ async function applyFinalRatingsToPlayers(){
     renderStatus();
 
     await showModal(
-      `Players sheet updated using ${res.methodLabel || label}. Backup created: ${res.backupSheet}.`,
+      `PLAYERS UPDATED SUCCESSFULLY\n\nPlayers sheet was updated using ${res.methodLabel || label}. Backup created: ${res.backupSheet}.`,
       "alert"
     );
   }catch(err){
-    await showModal(err.message || "Could not apply final ratings.", "alert");
+    await showModal(err.message || getSaveFailedMessage("APPLY TO PLAYERS"), "alert");
   }finally{
     hideBusy();
   }
