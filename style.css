@@ -58,7 +58,7 @@ body.busyActive{
 
 .loadingLogo{
   font-size:44px;
-  font-weight:900;
+  font-weight:800;
   letter-spacing:1px;
 }
 
@@ -240,15 +240,15 @@ main{
 .sectionKicker{
   color:#facc15;
   font-size:13px;
-  font-weight:900;
-  letter-spacing:1.6px;
+  font-weight:700;
+  letter-spacing:1.1px;
   margin-bottom:12px;
 }
 
 .heroPanel h2{
   font-size:clamp(30px, 5vw, 58px);
   margin-bottom:12px;
-  font-weight:900;
+  font-weight:800;
 }
 
 .heroPanel p{
@@ -261,7 +261,7 @@ main{
   border-radius:50%;
   background:#2563eb;
   color:#ffffff;
-  font-weight:900;
+  font-weight:700;
 }
 
 .homeInfoBtn{
@@ -320,7 +320,7 @@ main{
   align-items:center;
   justify-content:center;
   font-size:14px;
-  font-weight:900;
+  font-weight:700;
 }
 
 .homeInfoPanel{
@@ -362,8 +362,8 @@ main{
 .homeInfoTitle{
   color:#facc15;
   font-size:13px;
-  font-weight:900;
-  letter-spacing:1px;
+  font-weight:700;
+  letter-spacing:0.8px;
   text-align:center;
   text-transform:uppercase;
   margin-bottom:8px;
@@ -452,7 +452,7 @@ main{
 .versionLaunch span{
   display:block;
   font-size:26px;
-  font-weight:900;
+  font-weight:800;
   margin-bottom:8px;
   line-height:1.1;
 }
@@ -479,7 +479,7 @@ main{
 .sectionHeader h2{
   font-size:clamp(26px, 3vw, 38px);
   margin-bottom:6px;
-  font-weight:900;
+  font-weight:800;
 }
 
 .raterCard{
@@ -495,8 +495,8 @@ main{
 label{
   color:#cbd5e1;
   font-size:12px;
-  font-weight:900;
-  letter-spacing:0.7px;
+  font-weight:700;
+  letter-spacing:0.5px;
   text-transform:uppercase;
 }
 
@@ -536,8 +536,8 @@ select{
   background:rgba(255,255,255,0.035);
   color:#cbd5e1;
   font-size:12px;
-  font-weight:900;
-  letter-spacing:0.6px;
+  font-weight:700;
+  letter-spacing:0.45px;
   text-transform:uppercase;
 }
 
@@ -590,7 +590,7 @@ select{
   border-radius:8px;
   background:rgba(255,255,255,0.06);
   color:#ffffff;
-  font-weight:900;
+  font-weight:800;
 }
 
 .playerName{
@@ -609,7 +609,7 @@ select{
   color:#facc15;
   border:1px solid rgba(250,204,21,0.45);
   font-size:10px;
-  font-weight:900;
+  font-weight:700;
 }
 
 .sliderCell{
@@ -647,7 +647,7 @@ select{
   grid-row:1;
   height:38px;
   text-align:center;
-  font-weight:900;
+  font-weight:800;
   font-size:15px;
 }
 
@@ -736,7 +736,7 @@ select{
 
 .categoryName{
   font-size:12px;
-  font-weight:900;
+  font-weight:700;
   line-height:1.2;
   color:#f8fafc;
 }
@@ -752,7 +752,7 @@ select{
   background:rgba(255,255,255,0.08);
   color:#dbeafe;
   font-size:12px;
-  font-weight:900;
+  font-weight:700;
 }
 
 .categoryTip:hover::after{
@@ -793,7 +793,7 @@ select{
   color:#ffffff;
   border:1px solid rgba(255,255,255,0.12);
   font-size:12px;
-  font-weight:900;
+  font-weight:800;
 }
 
 .categoryControl .ratingSlider{
@@ -876,7 +876,7 @@ select{
   border-radius:50%;
   background:#2563eb;
   color:#ffffff;
-  font-weight:900;
+  font-weight:700;
 }
 
 .infoIcon{
@@ -919,7 +919,7 @@ select{
 .infoPanelBox h3{
   margin-bottom:12px;
   font-size:24px;
-  font-weight:900;
+  font-weight:800;
 }
 
 .infoPanelBox p{
@@ -945,8 +945,8 @@ select{
   border:none;
   border-radius:9px;
   color:#ffffff;
-  font-weight:900;
-  letter-spacing:0.5px;
+  font-weight:700;
+  letter-spacing:0.35px;
 }
 
 .submitBtn{
@@ -1035,8 +1035,8 @@ button:disabled{
   background:rgba(255,255,255,0.035);
   color:#cbd5e1;
   font-size:12px;
-  font-weight:900;
-  letter-spacing:0.6px;
+  font-weight:700;
+  letter-spacing:0.45px;
   text-transform:uppercase;
 }
 
@@ -1070,7 +1070,7 @@ button:disabled{
 }
 
 .statusRow > .statusPlayer{
-  font-weight:900;
+  font-weight:800;
   color:#ffffff;
 }
 
@@ -1083,7 +1083,7 @@ button:disabled{
   padding:3px 8px;
   border-radius:999px;
   font-size:11px;
-  font-weight:900;
+  font-weight:700;
 }
 
 .statusBadge.yes{
@@ -1159,8 +1159,8 @@ button:disabled{
 .weightsTitle{
   color:#facc15;
   font-size:12px;
-  font-weight:900;
-  letter-spacing:1px;
+  font-weight:700;
+  letter-spacing:0.8px;
   text-align:center;
   margin-bottom:10px;
 }
@@ -1214,7 +1214,7 @@ button:disabled{
   content:"\25B3";
   color:#64748b;
   font-size:11px;
-  font-weight:900;
+  font-weight:700;
   letter-spacing:0.4px;
 }
 
@@ -1255,7 +1255,7 @@ button:disabled{
 }
 
 .resultsPlayer{
-  font-weight:900;
+  font-weight:800;
   color:#ffffff;
 }
 
@@ -1443,7 +1443,7 @@ button:disabled{
     background:#1d4ed8;
     color:#facc15;
     font-size:18px;
-    font-weight:900;
+    font-weight:700;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -1484,8 +1484,8 @@ button:disabled{
     content:attr(data-label);
     color:#94a3b8;
     font-size:11px;
-    font-weight:900;
-    letter-spacing:0.5px;
+    font-weight:700;
+    letter-spacing:0.35px;
     text-transform:uppercase;
   }
 
@@ -1522,8 +1522,8 @@ button:disabled{
     content:attr(data-label);
     color:#94a3b8;
     font-size:11px;
-    font-weight:900;
-    letter-spacing:0.5px;
+    font-weight:700;
+    letter-spacing:0.35px;
     text-transform:uppercase;
   }
 
@@ -1578,8 +1578,8 @@ button:disabled{
   .tabButton::after{
     content:attr(data-mobile-label);
     font-size:11px;
-    font-weight:900;
-    letter-spacing:0.3px;
+    font-weight:700;
+    letter-spacing:0.2px;
   }
 
   .heroPanel{
@@ -1627,7 +1627,7 @@ button:disabled{
 
   .playerName{
     font-size:18px;
-    font-weight:900;
+    font-weight:800;
   }
 
   .playerNumber{
@@ -1654,8 +1654,8 @@ button:disabled{
     grid-column:1 / -1;
     color:#cbd5e1;
     font-size:13px;
-    font-weight:900;
-    letter-spacing:0.5px;
+    font-weight:700;
+    letter-spacing:0.35px;
     text-align:left;
     text-transform:uppercase;
   }
