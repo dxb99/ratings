@@ -253,7 +253,6 @@ main{
 .heroPanel,
 .raterCard,
 .ratingTableShell,
-.infoBar,
 .applyRatingsPanel,
 .weightsPanel,
 .resultsShell,
@@ -927,75 +926,6 @@ select{
 
 .score-4 .ratingSlider{
   accent-color:#22c55e;
-}
-
-.infoBar{
-  position:relative;
-  margin-bottom:18px;
-  padding:14px 16px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  color:#dbeafe;
-  line-height:1.35;
-}
-
-.infoIcon,
-.infoCloseBtn{
-  border:none;
-  border-radius:50%;
-  background:#2563eb;
-  color:#ffffff;
-  font-weight:700;
-}
-
-.infoIcon{
-  width:28px;
-  height:28px;
-}
-
-.infoPanel{
-  position:fixed;
-  inset:0;
-  z-index:500;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,0.72);
-}
-
-.infoPanel.show{
-  display:flex;
-}
-
-.infoPanelBox{
-  position:relative;
-  width:min(560px, calc(100% - 32px));
-  padding:26px;
-  border-radius:16px;
-  background:#08111f;
-  border:1px solid rgba(255,255,255,0.14);
-  box-shadow:0 24px 70px rgba(0,0,0,0.55);
-}
-
-.infoCloseBtn{
-  position:absolute;
-  top:12px;
-  right:12px;
-  width:28px;
-  height:28px;
-}
-
-.infoPanelBox h3{
-  margin-bottom:12px;
-  font-size:24px;
-  font-weight:800;
-}
-
-.infoPanelBox p{
-  color:#cbd5e1;
-  line-height:1.5;
-  margin-top:10px;
 }
 
 .submitRow{
@@ -1834,16 +1764,6 @@ button:disabled{
   .categoryControl{
     grid-template-columns:minmax(0, 1fr) 52px;
     gap:10px;
-  }
-
-  .infoBar{
-    align-items:flex-start;
-    text-align:left;
-    font-size:13px;
-  }
-
-  .infoPanelBox{
-    padding:24px 18px 20px 18px;
   }
 
   .submitBtn{
