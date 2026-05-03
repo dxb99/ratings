@@ -281,9 +281,6 @@ function setupButtons(){
   document.getElementById("applyFinalRatingsBtn").onclick = applyFinalRatingsToPlayers;
   setupResultsSorting();
 
-  const infoBtn = document.getElementById("infoBtn");
-  const infoPanel = document.getElementById("infoPanel");
-  const closeBtn = document.getElementById("infoCloseBtn");
   const homeInfoBtn = document.getElementById("homeInfoBtn");
   const homeInfoPanel = document.getElementById("homeInfoPanel");
   const homeInfoCloseBtn = document.getElementById("homeInfoCloseBtn");
@@ -304,20 +301,6 @@ function setupButtons(){
       }
     });
   });
-
-  infoBtn.onclick = e => {
-    e.stopPropagation();
-    infoPanel.classList.add("show");
-  };
-
-  closeBtn.onclick = e => {
-    e.stopPropagation();
-    infoPanel.classList.remove("show");
-  };
-
-  infoPanel.onclick = e => {
-    if(e.target === infoPanel) infoPanel.classList.remove("show");
-  };
 
   if(homeInfoBtn && homeInfoPanel && homeInfoCloseBtn){
     homeInfoBtn.onclick = e => {
