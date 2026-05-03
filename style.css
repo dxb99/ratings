@@ -439,6 +439,7 @@ main{
 }
 
 .versionLaunch{
+  position:relative;
   min-height:150px;
   padding:20px;
   border-radius:14px;
@@ -447,6 +448,32 @@ main{
   background:
     linear-gradient(180deg, rgba(37,99,235,0.92), rgba(15,23,42,0.92));
   box-shadow:0 12px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
+}
+
+.versionInfoBtn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.28);
+  color:#ffffff;
+  font-size:14px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+}
+
+.versionInfoBtn:hover,
+.versionInfoBtn:focus-visible{
+  background:#facc15;
+  color:#0f172a;
+  outline:none;
 }
 
 .versionLaunch span{
