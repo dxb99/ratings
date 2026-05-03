@@ -145,10 +145,74 @@ function showModal(message, type = "alert", withInput = false, inputType = "pass
   });
 }
 
+function showInfoModal(html){
+  return new Promise(resolve => {
+    const modal = document.getElementById("customModal");
+    const msg = document.getElementById("modalMessage");
+    const confirmBtn = document.getElementById("modalConfirm");
+    const cancelBtn = document.getElementById("modalCancel");
+    const input = document.getElementById("modalInput");
+
+    msg.innerHTML = html;
+    modal.classList.add("infoModalOpen");
+    cancelBtn.style.display = "none";
+
+    if(input){
+      input.style.display = "none";
+      input.value = "";
+    }
+
+    modal.style.display = "flex";
+
+    const cleanup = () => {
+      modal.style.display = "none";
+      modal.classList.remove("infoModalOpen");
+      msg.innerHTML = "";
+      confirmBtn.onclick = null;
+      cancelBtn.onclick = null;
+      resolve(true);
+    };
+
+    confirmBtn.onclick = cleanup;
+    cancelBtn.onclick = cleanup;
+  });
+}
+
 const versionInfoMessages = {
-  1: "VERSION 1 uses one overall 0-10 score per player. It is the fastest method: each rater gives one final score for each player.",
-  2: "VERSION 2 uses three game mode scores: Elimination, Blitz, and CTF. Each rater's three mode scores are averaged into one Version 2 score for that player.",
-  3: "VERSION 3 uses six gameplay categories: Combat, Communication, Decision, Awareness, Movement, and Impact. Each rater's six category scores are averaged into one Version 3 score for that player."
+  1: `
+    <div class="versionInfoModal">
+      <h3>V1 AVG</h3>
+      <p>Version 1 uses one overall 0-10 score per player. Example: Xan rates Malcolm as 8. Other players rate Malcolm as 7, 9, 6, and 8. V1 AVG adds all submitted Version 1 scores for Malcolm: 8 + 7 + 9 + 6 + 8 = 38. Then it divides by 5 votes, so Malcolm's V1 AVG is 7.6.</p>
+      <h3>V1 MED</h3>
+      <p>Version 1 uses one overall 0-10 score per player. V1 MED sorts Malcolm's submitted Version 1 scores from lowest to highest and uses the middle score. Example: Xan and others give Malcolm 5, 6, 7, 8, and 10. The middle score is 7, so Malcolm's V1 MED is 7. If the middle scores are 7 and 8, the median is halfway between them: 7.5.</p>
+    </div>
+  `,
+  2: `
+    <div class="versionInfoModal">
+      <h3>V2 AVG</h3>
+      <p>Version 2 uses three mode scores: Elimination, Blitz, and CTF. First, each rater's three scores become one Version 2 score. Example: Xan rates Malcolm 6 in Elimination, 5 in Blitz, and 7 in CTF. That becomes (6 + 5 + 7) / 3 = 6. V2 AVG then averages Malcolm's final Version 2 scores from all voters.</p>
+      <h3>V2 MED</h3>
+      <p>Version 2 uses Elimination, Blitz, and CTF. First, each rater's three mode scores become one Version 2 score for Malcolm. Example: Xan's 6, 5, and 7 becomes 6. V2 MED then sorts Malcolm's final Version 2 scores from all voters. Example final scores: 5, 5, 6, 7, 8. The middle is 6, so Malcolm's V2 MED is 6.</p>
+    </div>
+  `,
+  3: `
+    <div class="versionInfoModal">
+      <h3>V3 AVG</h3>
+      <p>Version 3 uses six category scores: Combat, Communication, Decision, Awareness, Movement, and Impact. First, each rater's six category scores become one Version 3 score. Example: Xan gives Malcolm 10, 7.5, 7.5, 5, 10, and 7.5. That becomes 47.5 / 6 = 7.9. V3 AVG then averages Malcolm's final Version 3 scores from all voters.</p>
+      <h3>V3 MED</h3>
+      <p>Version 3 uses six category scores. First, each rater's six scores become one Version 3 score for Malcolm. Example: Xan's six category scores give Malcolm a final Version 3 score of 7.9. V3 MED then sorts Malcolm's final Version 3 scores from all voters. Example final scores: 5.8, 6.7, 6.7, 7.9, 8.3. The middle is 6.7, so Malcolm's V3 MED is 6.7.</p>
+      <h3>V3 WEIGHTED</h3>
+      <p>V3 Weighted uses the same six Version 3 categories, but some categories count more than others. Example: Xan rates Malcolm in Combat, Communication, Decision, Awareness, Movement, and Impact. Combat affects the score more than Communication because Combat has more weight.</p>
+      <div class="versionInfoWeights">
+        <span>COMBAT SKILLS <strong>22%</strong></span>
+        <span>MOVEMENT / SPEED <strong>18%</strong></span>
+        <span>MAP AWARENESS <strong>18%</strong></span>
+        <span>DECISION MAKING <strong>17%</strong></span>
+        <span>TEAM IMPACT <strong>15%</strong></span>
+        <span>COMMUNICATION <strong>10%</strong></span>
+      </div>
+    </div>
+  `
 };
 
 function setupTabs(){
@@ -209,7 +273,7 @@ function setupButtons(){
       e.preventDefault();
 
       const version = btn.dataset.versionInfo;
-      showModal(versionInfoMessages[version] || "No information available.", "alert");
+      showInfoModal(versionInfoMessages[version] || "<p>No information available.</p>");
     };
 
     btn.addEventListener("click", openVersionInfo);
