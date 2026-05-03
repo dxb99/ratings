@@ -27,37 +27,37 @@ const scaleOptions = [
 const version3Categories = [
   {
     key: "combat",
-    label: "Combat Skills",
+    label: "COMBAT SKILLS",
     tip: "Aim, weapon control, ammo use, and winning fights.",
     theme: "combat"
   },
   {
     key: "communication",
-    label: "Communication / Status Updates",
+    label: "COMMUNICATION / STATUS UPDATES",
     tip: "Clear, useful updates without cluttering comms.",
     theme: "communication"
   },
   {
     key: "decision",
-    label: "Decision Making",
+    label: "DECISION MAKING",
     tip: "Smart choices on when to attack, defend, rotate, or support.",
     theme: "decision"
   },
   {
     key: "awareness",
-    label: "Map Awareness",
+    label: "MAP AWARENESS",
     tip: "Knowledge of routes, pickups, player positions, and pressure.",
     theme: "awareness"
   },
   {
     key: "movement",
-    label: "Movement / Speed",
+    label: "MOVEMENT / SPEED",
     tip: "Dodging, wall runs, chasing, escaping, and reaching key areas quickly.",
     theme: "movement"
   },
   {
     key: "impact",
-    label: "Team Impact",
+    label: "TEAM IMPACT",
     tip: "Overall contribution to team control, momentum, and wins.",
     theme: "impact"
   }
