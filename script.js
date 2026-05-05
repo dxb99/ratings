@@ -284,6 +284,8 @@ async function attemptShowTab(tabId){
       );
 
       if(!confirmed) return;
+
+      restoreVersionBaseline(currentVersion);
     }
   }
 
@@ -623,6 +625,30 @@ function captureVersionBaseline(version){
 
 function captureAllVersionBaselines(){
   [1, 2, 3].forEach(version => captureVersionBaseline(version));
+}
+
+function restoreVersionBaseline(version){
+  let snapshot = null;
+
+  try{
+    snapshot = JSON.parse(versionBaselineSnapshots[version] || "");
+  }catch(err){
+    snapshot = { ratings: [] };
+  }
+
+  rerenderVersion(version);
+
+  if(snapshot && Array.isArray(snapshot.ratings) && snapshot.ratings.length){
+    applySavedSubmission(version, snapshot.ratings);
+  }else{
+    captureVersionBaseline(version);
+  }
+
+  updateSubmitButtons();
+}
+
+function restoreAllVersionBaselines(){
+  [1, 2, 3].forEach(version => restoreVersionBaseline(version));
 }
 
 function isVersionDirty(version){
@@ -1354,6 +1380,8 @@ document.addEventListener("change", async e => {
         setAllRaterSelects(previousRater);
         return;
       }
+
+      restoreAllVersionBaselines();
     }
 
     handleRaterChange(nextRater);
