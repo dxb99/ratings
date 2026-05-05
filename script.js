@@ -15,6 +15,17 @@ let currentResultsSort = {
   direction: "asc"
 };
 let busyActive = false;
+let currentRaterVerification = {
+  playerName: "",
+  maskedEmail: "",
+  hasEmail: false,
+  hasActiveCode: false,
+  expiresAt: "",
+  canResend: false,
+  resendSecondsRemaining: 0
+};
+let verifiedRater = "";
+let verifiedCode = "";
 
 const version3Categories = [
   {
@@ -271,6 +282,7 @@ function setupButtons(){
   document.getElementById("refreshStatusBtn").onclick = refreshStatus;
   document.getElementById("ratingsLockToggleBtn").onclick = toggleRatingsLock;
   document.getElementById("applyFinalRatingsBtn").onclick = applyFinalRatingsToPlayers;
+  setupVerificationControls();
   setupResultsSorting();
 
   const homeInfoBtn = document.getElementById("homeInfoBtn");
@@ -309,6 +321,23 @@ function setupButtons(){
       if(e.target === homeInfoPanel) homeInfoPanel.classList.remove("show");
     };
   }
+}
+
+function setupVerificationControls(){
+  document.querySelectorAll(".verificationPanel").forEach(panel => {
+    panel.addEventListener("click", e => {
+      const requestBtn = e.target.closest(".requestCodeBtn");
+      const verifyBtn = e.target.closest(".verifyCodeBtn");
+
+      if(requestBtn){
+        requestRatingCode();
+      }
+
+      if(verifyBtn){
+        verifyRatingCode(panel);
+      }
+    });
+  });
 }
 
 function setupResultsSorting(){
@@ -362,6 +391,7 @@ async function loadInitialData(){
   renderAllVersions();
   renderResults();
   renderStatus();
+  renderVerificationPanels();
   updateSubmitButtons();
   updateRatingsLockUi();
 }
@@ -374,6 +404,245 @@ function setAllRaterSelects(rater){
   });
 }
 
+function resetVerificationState(){
+  currentRaterVerification = {
+    playerName: "",
+    maskedEmail: "",
+    hasEmail: false,
+    hasActiveCode: false,
+    expiresAt: "",
+    canResend: false,
+    resendSecondsRemaining: 0
+  };
+  verifiedRater = "";
+  verifiedCode = "";
+  renderVerificationPanels();
+}
+
+function isCurrentRaterVerified(){
+  return !!verifiedRater && !!verifiedCode && verifiedRater === currentRaterVerification.playerName;
+}
+
+function formatTimeRemaining(dateValue){
+  if(!dateValue) return "";
+
+  const date = new Date(dateValue);
+  if(Number.isNaN(date.getTime())) return "";
+
+  const diff = date - new Date();
+  if(diff <= 0) return "expired";
+
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.ceil((diff % 3600000) / 60000);
+
+  if(hours <= 0){
+    return `${minutes}m`;
+  }
+
+  return `${hours}h ${minutes}m`;
+}
+
+function formatResendWait(seconds){
+  const safeSeconds = Math.max(0, Number(seconds) || 0);
+  if(safeSeconds <= 0) return "";
+
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainingSeconds = safeSeconds % 60;
+
+  if(minutes <= 0){
+    return `${remainingSeconds}s`;
+  }
+
+  return `${minutes}m ${remainingSeconds}s`;
+}
+
+function renderVerificationPanels(){
+  const selectedRater = currentRaterVerification.playerName;
+  const verified = isCurrentRaterVerified();
+
+  document.querySelectorAll(".verificationPanel").forEach(panel => {
+    if(!selectedRater){
+      panel.innerHTML = "";
+      panel.classList.remove("show", "verified");
+      return;
+    }
+
+    panel.classList.add("show");
+    panel.classList.toggle("verified", verified);
+
+    if(!currentRaterVerification.hasEmail){
+      panel.innerHTML = `
+        <div class="verificationMessage warning">
+          No registered email found for this player. Contact admin.
+        </div>
+      `;
+      return;
+    }
+
+    if(verified){
+      panel.innerHTML = `
+        <div class="verificationMessage verifiedText">
+          VERIFIED AS ${selectedRater}
+        </div>
+        <div class="verificationSubtext">
+          You can submit, update, or clear saved ratings for all versions.
+        </div>
+      `;
+      return;
+    }
+
+    const hasActiveCode = !!currentRaterVerification.hasActiveCode;
+    const expiresText = hasActiveCode ? formatTimeRemaining(currentRaterVerification.expiresAt) : "";
+    const resendWait = formatResendWait(currentRaterVerification.resendSecondsRemaining);
+    const requestLabel = hasActiveCode ? "RESEND CODE" : "REQUEST CODE";
+    const requestDisabled = hasActiveCode && !currentRaterVerification.canResend;
+    const infoText = hasActiveCode
+      ? `A verification code was already sent to ${currentRaterVerification.maskedEmail}. Expires in ${expiresText}.`
+      : `Verification code will be sent to ${currentRaterVerification.maskedEmail}.`;
+    const waitText = requestDisabled ? `<div class="verificationSubtext">You can resend again in ${resendWait}.</div>` : "";
+
+    panel.innerHTML = `
+      <div class="verificationMessage">${infoText}</div>
+      ${waitText}
+      <div class="verificationControls">
+        <button type="button" class="smallBtn requestCodeBtn" ${requestDisabled ? "disabled" : ""}>${requestLabel}</button>
+        <input class="verificationCodeInput" type="text" inputmode="numeric" maxlength="6" placeholder="Enter code">
+        <button type="button" class="smallBtn verifyCodeBtn">VERIFY</button>
+      </div>
+    `;
+  });
+
+  updateSubmitButtons();
+}
+
+async function refreshRaterVerificationStatus(rater){
+  if(!rater){
+    resetVerificationState();
+    return;
+  }
+
+  const res = await api({
+    action: "getRaterVerificationStatus",
+    playerName: rater
+  });
+
+  if(!res || !res.ok){
+    currentRaterVerification = {
+      playerName: rater,
+      maskedEmail: "",
+      hasEmail: false,
+      hasActiveCode: false,
+      expiresAt: "",
+      canResend: false,
+      resendSecondsRemaining: 0
+    };
+    verifiedRater = "";
+    verifiedCode = "";
+    renderVerificationPanels();
+    return;
+  }
+
+  currentRaterVerification = {
+    playerName: res.playerName || rater,
+    maskedEmail: res.maskedEmail || "",
+    hasEmail: !!res.hasEmail,
+    hasActiveCode: !!res.hasActiveCode,
+    expiresAt: res.expiresAt || "",
+    canResend: !!res.canResend,
+    resendSecondsRemaining: Number(res.resendSecondsRemaining || 0)
+  };
+  verifiedRater = "";
+  verifiedCode = "";
+  renderVerificationPanels();
+}
+
+async function requestRatingCode(){
+  if(busyActive) return;
+
+  const rater = currentRaterVerification.playerName || document.querySelector(".raterSelect")?.value || "";
+
+  if(!rater){
+    await showModal("Select your name before requesting a code.", "alert");
+    return;
+  }
+
+  showBusy(currentRaterVerification.hasActiveCode ? "RESENDING CODE" : "SENDING CODE");
+
+  try{
+    const res = await api({
+      action: "requestRatingCode",
+      playerName: rater
+    });
+
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || "Could not send verification code.");
+    }
+
+    await refreshRaterVerificationStatus(rater);
+    await showModal(res.resent ? "Verification code resent. Check your email." : "Verification code sent. Check your email.", "alert");
+  }catch(err){
+    await showModal(err.message || "Could not send verification code.", "alert");
+    await refreshRaterVerificationStatus(rater);
+  }finally{
+    hideBusy();
+  }
+}
+
+async function verifyRatingCode(panel = null){
+  if(busyActive) return;
+
+  const rater = currentRaterVerification.playerName || "";
+  const input = panel
+    ? panel.querySelector(".verificationCodeInput")
+    : document.querySelector(".verificationPanel.show .verificationCodeInput");
+  const code = input ? input.value.trim() : "";
+
+  if(!rater){
+    await showModal("Select your name before verifying.", "alert");
+    return;
+  }
+
+  if(!code){
+    await showModal("Enter your verification code.", "alert");
+    return;
+  }
+
+  showBusy("VERIFYING");
+
+  try{
+    const res = await api({
+      action: "verifyRatingCode",
+      playerName: rater,
+      code: code
+    });
+
+    if(!res || !res.ok){
+      throw new Error((res && res.error) || "Could not verify code.");
+    }
+
+    currentRaterVerification = {
+      ...currentRaterVerification,
+      playerName: res.playerName || rater,
+      maskedEmail: res.maskedEmail || currentRaterVerification.maskedEmail,
+      hasEmail: true,
+      hasActiveCode: true,
+      expiresAt: res.expiresAt || currentRaterVerification.expiresAt
+    };
+    verifiedRater = currentRaterVerification.playerName;
+    verifiedCode = code;
+    renderVerificationPanels();
+
+    await showModal(`Verified as ${verifiedRater}.`, "alert");
+  }catch(err){
+    verifiedRater = "";
+    verifiedCode = "";
+    renderVerificationPanels();
+    await showModal(err.message || "Invalid verification code.", "alert");
+  }finally{
+    hideBusy();
+  }
+}
+
 function updateSubmitButtons(){
   [1, 2, 3].forEach(version => {
     const btn = document.getElementById(`submitVersion${version}Btn`);
@@ -384,8 +653,10 @@ function updateSubmitButtons(){
       ? `UPDATE VERSION ${version}`
       : `SUBMIT VERSION ${version}`;
 
-    btn.disabled = ratingsLocked;
-    clearSavedBtn.disabled = ratingsLocked;
+    const disableRatingActions = ratingsLocked || !isCurrentRaterVerified();
+
+    btn.disabled = disableRatingActions;
+    clearSavedBtn.disabled = disableRatingActions;
     clearSavedBtn.style.display = savedSubmissionState[version] ? "inline-flex" : "none";
   });
 }
@@ -698,6 +969,11 @@ async function clearSavedVersion(version){
     return;
   }
 
+  if(!isCurrentRaterVerified()){
+    await showModal("Verify your email code before clearing saved ratings.", "alert");
+    return;
+  }
+
   const confirmed = await showModal(
     `Clear saved Version ${version} ratings for ${rater}? This will remove that version from the Results comparison until it is submitted again.`,
     "confirm"
@@ -711,7 +987,8 @@ async function clearSavedVersion(version){
     const res = await api({
       action: "clearVersionSubmission",
       version: version,
-      rater: rater
+      rater: rater,
+      verificationCode: verifiedCode
     });
 
     if(!res || !res.ok){
@@ -880,12 +1157,15 @@ async function handleRaterChange(rater){
 
   setAllRaterSelects(rater);
   savedSubmissionState = { 1: false, 2: false, 3: false };
+  resetVerificationState();
   renderAllVersions();
   updateSubmitButtons();
 
   showBusy("LOADING SAVED RATINGS");
 
   try{
+    await refreshRaterVerificationStatus(rater);
+
     const responses = await Promise.all([1, 2, 3].map(version => {
       return api({
         action: "getRaterSubmission",
@@ -1056,6 +1336,11 @@ async function submitVersion(version){
     return;
   }
 
+  if(!isCurrentRaterVerified()){
+    await showModal("Verify your email code before saving ratings.", "alert");
+    return;
+  }
+
   const actionLabel = savedSubmissionState[version] ? "Update" : "Submit";
   const confirmed = await showModal(`${actionLabel} Version ${version} ratings for ${data.rater}?`, "confirm");
   if(!confirmed) return;
@@ -1067,7 +1352,8 @@ async function submitVersion(version){
       action: "submitVersionRatings",
       version: data.version,
       rater: data.rater,
-      ratings: data.ratings
+      ratings: data.ratings,
+      verificationCode: verifiedCode
     });
 
     if(!res || !res.ok){
