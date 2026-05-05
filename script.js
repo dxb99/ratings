@@ -1483,6 +1483,11 @@ function getRaterForVersion(version){
   return select ? select.value : "";
 }
 
+function shouldEmailCopyForVersion(version){
+  const checkbox = document.getElementById(`emailCopyVersion${version}`);
+  return checkbox ? checkbox.checked : true;
+}
+
 function collectVersion1(){
   const rater = getRaterForVersion(1);
   if(!rater) return { ok: false, error: "Select your name before submitting Version 1." };
@@ -1604,7 +1609,8 @@ async function submitVersion(version){
       version: data.version,
       rater: data.rater,
       ratings: data.ratings,
-      verificationCode: verifiedCode
+      verificationCode: verifiedCode,
+      emailCopy: shouldEmailCopyForVersion(version)
     });
 
     if(!res || !res.ok){
@@ -1619,7 +1625,14 @@ async function submitVersion(version){
     updateSubmitButtons();
     renderResults();
     renderStatus();
-    await showModal(`SAVED SUCCESSFULLY\n\nVersion ${version} ratings were ${doneLabel} for ${data.rater}. ${res.submittedCount || data.ratings.length} players rated.`, "alert");
+
+    const emailLine = shouldEmailCopyForVersion(version)
+      ? (res.playerEmailSent
+        ? "\n\nA copy was emailed to your registered email."
+        : "\n\nRatings were saved, but the email copy could not be sent.")
+      : "";
+
+    await showModal(`SAVED SUCCESSFULLY\n\nVersion ${version} ratings were ${doneLabel} for ${data.rater}. ${res.submittedCount || data.ratings.length} players rated.${emailLine}`, "alert");
   }catch(err){
     await showModal(err.message || getSaveFailedMessage(`VERSION ${version} SAVE`), "alert");
   }finally{
