@@ -1574,7 +1574,7 @@ button:disabled{
 
 @media(max-width:640px){
   header{
-    padding:9px 8px 8px 8px;
+    padding:9px 8px 10px 8px;
   }
 
   .brand{
@@ -1598,26 +1598,42 @@ button:disabled{
   }
 
   .tabs{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:250;
     grid-template-columns:repeat(6, minmax(0, 1fr));
     gap:4px;
-    padding:4px;
-    margin-top:9px;
-    border-radius:12px;
+    width:100%;
+    margin:0;
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom)) 6px;
+    border-radius:0;
+    border-left:none;
+    border-right:none;
+    border-bottom:none;
+    background:rgba(5,7,12,0.96);
+    box-shadow:0 -12px 30px rgba(0,0,0,0.55);
+    backdrop-filter:blur(18px);
   }
 
   .tabButton{
-    min-height:36px;
+    min-height:42px;
     padding:0 2px;
     font-size:0;
     letter-spacing:0;
-    border-radius:9px;
+    border-radius:10px;
   }
 
   .tabButton::after{
     content:attr(data-mobile-label);
-    font-size:11px;
+    font-size:10px;
     font-weight:700;
     letter-spacing:0.2px;
+  }
+
+  main{
+    margin-bottom:calc(92px + env(safe-area-inset-bottom));
   }
 
   .heroPanel{
