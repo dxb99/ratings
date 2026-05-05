@@ -26,6 +26,12 @@ let currentRaterVerification = {
 };
 let verifiedRater = "";
 let verifiedCode = "";
+let verificationCountdownTimer = null;
+let versionBaselineSnapshots = {
+  1: JSON.stringify({ rater: "", ratings: [] }),
+  2: JSON.stringify({ rater: "", ratings: [] }),
+  3: JSON.stringify({ rater: "", ratings: [] })
+};
 
 const version3Categories = [
   {
@@ -79,6 +85,13 @@ window.addEventListener("load", async () => {
     document.getElementById("loadingScreen").style.display = "none";
     showStartupError();
   }
+});
+
+window.addEventListener("beforeunload", e => {
+  if(!hasAnyUnsavedChanges()) return;
+
+  e.preventDefault();
+  e.returnValue = "";
 });
 
 function setupStartupRetry(){
@@ -241,11 +254,40 @@ const versionInfoMessages = {
 
 function setupTabs(){
   document.querySelectorAll("[data-tab]").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       if(busyActive) return;
-      showTab(btn.dataset.tab);
+      await attemptShowTab(btn.dataset.tab);
     });
   });
+}
+
+function getActiveTabId(){
+  const activeTab = document.querySelector(".tabContent.active");
+  return activeTab ? activeTab.id : "";
+}
+
+function getVersionFromTabId(tabId){
+  const match = String(tabId || "").match(/^version([123])Tab$/);
+  return match ? Number(match[1]) : null;
+}
+
+async function attemptShowTab(tabId){
+  const currentTabId = getActiveTabId();
+
+  if(currentTabId && currentTabId !== tabId){
+    const currentVersion = getVersionFromTabId(currentTabId);
+
+    if(currentVersion && isVersionDirty(currentVersion)){
+      const confirmed = await showModal(
+        "You have unsaved rating changes on this tab. Leave without saving?",
+        "confirm"
+      );
+
+      if(!confirmed) return;
+    }
+  }
+
+  showTab(tabId);
 }
 
 function showTab(tabId){
@@ -284,6 +326,7 @@ function setupButtons(){
   document.getElementById("applyFinalRatingsBtn").onclick = applyFinalRatingsToPlayers;
   setupVerificationControls();
   setupResultsSorting();
+  startVerificationCountdownTimer();
 
   const homeInfoBtn = document.getElementById("homeInfoBtn");
   const homeInfoPanel = document.getElementById("homeInfoPanel");
@@ -420,7 +463,19 @@ function resetVerificationState(){
 }
 
 function isCurrentRaterVerified(){
-  return !!verifiedRater && !!verifiedCode && verifiedRater === currentRaterVerification.playerName;
+  if(!verifiedRater || !verifiedCode || verifiedRater !== currentRaterVerification.playerName){
+    return false;
+  }
+
+  const expiresAt = currentRaterVerification.expiresAt
+    ? new Date(currentRaterVerification.expiresAt)
+    : null;
+
+  if(expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt <= new Date()){
+    return false;
+  }
+
+  return true;
 }
 
 function updateRatingControlLockState(){
@@ -470,6 +525,114 @@ function formatResendWait(seconds){
   return `${minutes}m ${remainingSeconds}s`;
 }
 
+function startVerificationCountdownTimer(){
+  if(verificationCountdownTimer) return;
+
+  verificationCountdownTimer = setInterval(() => {
+    updateVerificationCountdownDisplays();
+  }, 1000);
+}
+
+function updateVerificationCountdownDisplays(){
+  if(!currentRaterVerification.playerName || !currentRaterVerification.hasActiveCode){
+    return;
+  }
+
+  const expiresText = formatTimeRemaining(currentRaterVerification.expiresAt) || "expired";
+
+  document.querySelectorAll(".verificationExpiryCountdown").forEach(el => {
+    el.textContent = expiresText;
+  });
+
+  if(!currentRaterVerification.canResend && currentRaterVerification.resendSecondsRemaining > 0){
+    currentRaterVerification.resendSecondsRemaining = Math.max(
+      0,
+      Number(currentRaterVerification.resendSecondsRemaining || 0) - 1
+    );
+  }
+
+  if(currentRaterVerification.resendSecondsRemaining <= 0){
+    currentRaterVerification.canResend = true;
+  }
+
+  const resendWait = formatResendWait(currentRaterVerification.resendSecondsRemaining);
+
+  document.querySelectorAll(".verificationResendCountdown").forEach(el => {
+    el.textContent = resendWait;
+    const wrapper = el.closest(".verificationSubtext");
+    if(wrapper && currentRaterVerification.canResend){
+      wrapper.style.display = "none";
+    }
+  });
+
+  document.querySelectorAll(".requestCodeBtn").forEach(btn => {
+    btn.disabled = !!currentRaterVerification.hasActiveCode && !currentRaterVerification.canResend;
+  });
+
+  updateSubmitButtons();
+  updateRatingControlLockState();
+}
+
+function getVersionFormSnapshot(version){
+  const rater = getRaterForVersion(version);
+
+  if(!rater){
+    return JSON.stringify({ rater: "", ratings: [] });
+  }
+
+  const rows = Array.from(document.querySelectorAll(`#version${version}Rows .ratingRow`))
+    .filter(row => row.dataset.player !== rater);
+
+  const ratings = rows.map(row => {
+    const rating = { ratedPlayer: row.dataset.player };
+
+    if(version === 1){
+      const slider = row.querySelector('.ratingSlider[data-field="overall"]');
+      rating.overall = slider && slider.dataset.rated === "true"
+        ? Number(slider.value)
+        : null;
+    }
+
+    if(version === 2){
+      ["elimination", "blitz", "ctf"].forEach(field => {
+        const slider = row.querySelector(`.ratingSlider[data-field="${field}"]`);
+        rating[field] = slider && slider.dataset.rated === "true"
+          ? Number(slider.value)
+          : null;
+      });
+    }
+
+    if(version === 3){
+      version3Categories.forEach(category => {
+        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
+        rating[category.key] = slider && slider.dataset.rated === "true"
+          ? Math.max(0, Math.min(10, Math.round(Number(slider.dataset.value))))
+          : null;
+      });
+    }
+
+    return rating;
+  });
+
+  return JSON.stringify({ rater, ratings });
+}
+
+function captureVersionBaseline(version){
+  versionBaselineSnapshots[version] = getVersionFormSnapshot(version);
+}
+
+function captureAllVersionBaselines(){
+  [1, 2, 3].forEach(version => captureVersionBaseline(version));
+}
+
+function isVersionDirty(version){
+  return getVersionFormSnapshot(version) !== versionBaselineSnapshots[version];
+}
+
+function hasAnyUnsavedChanges(){
+  return [1, 2, 3].some(version => isVersionDirty(version));
+}
+
 function renderVerificationPanels(){
   const selectedRater = currentRaterVerification.playerName;
   const verified = isCurrentRaterVerified();
@@ -501,7 +664,7 @@ function renderVerificationPanels(){
           Verified as: ${selectedRater}
         </div>
         <div class="verificationSubtext">
-          Code expires in: ${expiresText || "24h"}
+          Code expires in: <span class="verificationExpiryCountdown">${expiresText || "24h"}</span>
         </div>
       `;
       return;
@@ -513,9 +676,9 @@ function renderVerificationPanels(){
     const requestLabel = hasActiveCode ? "RESEND CODE" : "REQUEST CODE";
     const requestDisabled = hasActiveCode && !currentRaterVerification.canResend;
     const infoText = hasActiveCode
-      ? `A verification code was already sent to ${currentRaterVerification.maskedEmail}. Expires in ${expiresText}.`
+      ? `A verification code was already sent to ${currentRaterVerification.maskedEmail}. Expires in <span class="verificationExpiryCountdown">${expiresText}</span>.`
       : `Verification code will be sent to ${currentRaterVerification.maskedEmail}.`;
-    const waitText = requestDisabled ? `<div class="verificationSubtext">You can resend again in ${resendWait}.</div>` : "";
+    const waitText = requestDisabled ? `<div class="verificationSubtext">You can resend again in <span class="verificationResendCountdown">${resendWait}</span>.</div>` : "";
 
     panel.innerHTML = `
       <div class="verificationMessage">${infoText}</div>
@@ -666,13 +829,15 @@ function updateSubmitButtons(){
     const clearSavedBtn = document.getElementById(`clearSavedVersion${version}Btn`);
     if(!btn || !clearSavedBtn) return;
 
+    const isDirty = isVersionDirty(version);
+
     btn.textContent = savedSubmissionState[version]
       ? `UPDATE VERSION ${version}`
       : `SUBMIT VERSION ${version}`;
 
     const disableRatingActions = ratingsLocked || !isCurrentRaterVerified();
 
-    btn.disabled = disableRatingActions;
+    btn.disabled = disableRatingActions || !isDirty;
     clearSavedBtn.disabled = disableRatingActions;
     clearSavedBtn.style.display = savedSubmissionState[version] ? "inline-flex" : "none";
   });
@@ -835,6 +1000,7 @@ function renderAllVersions(){
   renderVersion1Rows();
   renderVersion2Rows();
   renderVersion3Rows();
+  captureAllVersionBaselines();
 }
 
 function populateRaterSelects(){
@@ -940,6 +1106,7 @@ function bindNumericSliders(container){
 
     slider.addEventListener("input", () => {
       markNumericRated(cell, slider.value);
+      updateSubmitButtons();
     });
 
     box.addEventListener("input", () => {
@@ -949,11 +1116,13 @@ function bindNumericSliders(container){
         slider.dataset.rated = "false";
         cell.classList.remove("numericRated", "score-0", "score-1", "score-2", "score-3", "score-4");
         cell.classList.add("numericUntouched");
+        updateSubmitButtons();
         return;
       }
 
       value = Math.max(0, Math.min(10, value));
       markNumericRated(cell, value);
+      updateSubmitButtons();
     });
   });
 }
@@ -969,6 +1138,10 @@ async function resetVersion(version){
   if(!confirmed) return;
 
   rerenderVersion(version);
+  if(!savedSubmissionState[version]){
+    captureVersionBaseline(version);
+  }
+  updateSubmitButtons();
 }
 
 async function clearSavedVersion(version){
@@ -1016,6 +1189,7 @@ async function clearSavedVersion(version){
     latestResults = res.results || latestResults;
     latestStatus = res.status || latestStatus;
     rerenderVersion(version);
+    captureVersionBaseline(version);
     updateSubmitButtons();
     renderResults();
     renderStatus();
@@ -1144,8 +1318,11 @@ function renderVersion3Rows(){
 
   rows.querySelectorAll(".categoryCell").forEach(cell => {
     const slider = cell.querySelector(".categorySlider");
-    if(!slider || slider.disabled) return;
-    slider.addEventListener("input", () => updateCategoryCell(cell, slider));
+    if(!slider) return;
+    slider.addEventListener("input", () => {
+      updateCategoryCell(cell, slider);
+      updateSubmitButtons();
+    });
     cell.querySelectorAll(".categoryValueBox").forEach(box => {
       box.addEventListener("input", () => {
         let nextValue = Math.round(Number(box.value));
@@ -1156,14 +1333,30 @@ function renderVersion3Rows(){
         box.value = nextValue;
         slider.value = nextValue;
         updateCategoryCell(cell, slider);
+        updateSubmitButtons();
       });
     });
   });
 }
 
-document.addEventListener("change", e => {
+document.addEventListener("change", async e => {
   if(e.target.classList.contains("raterSelect")){
-    handleRaterChange(e.target.value);
+    const nextRater = e.target.value;
+    const previousRater = currentRaterVerification.playerName;
+
+    if(previousRater && nextRater !== previousRater && hasAnyUnsavedChanges()){
+      const confirmed = await showModal(
+        "You have unsaved rating changes. Switch rater without saving?",
+        "confirm"
+      );
+
+      if(!confirmed){
+        setAllRaterSelects(previousRater);
+        return;
+      }
+    }
+
+    handleRaterChange(nextRater);
   }
 });
 
@@ -1253,6 +1446,8 @@ function applySavedSubmission(version, ratings){
       });
     }
   });
+
+  captureVersionBaseline(version);
 }
 
 function getRaterForVersion(version){
@@ -1364,6 +1559,11 @@ async function submitVersion(version){
     return;
   }
 
+  if(!isVersionDirty(version)){
+    await showModal(`No Version ${version} changes to save.`, "alert");
+    return;
+  }
+
   const actionLabel = savedSubmissionState[version] ? "Update" : "Submit";
   const confirmed = await showModal(`${actionLabel} Version ${version} ratings for ${data.rater}?`, "confirm");
   if(!confirmed) return;
@@ -1387,6 +1587,7 @@ async function submitVersion(version){
     latestResults = res.results || latestResults;
     latestStatus = res.status || latestStatus;
     savedSubmissionState[version] = true;
+    captureVersionBaseline(version);
     updateSubmitButtons();
     renderResults();
     renderStatus();
