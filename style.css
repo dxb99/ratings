@@ -1032,6 +1032,7 @@ select{
   align-items:center;
   gap:12px;
   margin-top:18px;
+  flex-wrap:wrap;
 }
 
 .emailCopyOption{
@@ -1048,6 +1049,8 @@ select{
   font-weight:700;
   white-space:nowrap;
   cursor:pointer;
+  min-width:170px;
+  justify-content:center;
 }
 
 .emailCopyOption input{
@@ -1070,21 +1073,21 @@ select{
 }
 
 .submitBtn{
-  min-width:260px;
+  min-width:220px;
   padding:0 24px;
   background:linear-gradient(180deg, #2563eb, #1d4ed8);
   box-shadow:0 10px 24px rgba(37,99,235,0.34);
 }
 
 .resetBtn{
-  min-width:190px;
+  min-width:150px;
   padding:0 18px;
   background:linear-gradient(180deg, #334155, #1e293b);
   border:1px solid rgba(255,255,255,0.12);
 }
 
 .clearSavedBtn{
-  min-width:160px;
+  min-width:150px;
   padding:0 18px;
   background:linear-gradient(180deg, #991b1b, #7f1d1d);
   border:1px solid rgba(248,113,113,0.35);
