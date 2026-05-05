@@ -602,6 +602,7 @@ select{
 .resultsHeader{
   min-height:58px;
   padding:0 18px;
+  gap:14px;
   background:rgba(255,255,255,0.035);
   color:#cbd5e1;
   font-size:12px;
