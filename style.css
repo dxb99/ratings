@@ -1034,6 +1034,28 @@ select{
   margin-top:18px;
 }
 
+.emailCopyOption{
+  min-height:42px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:0 14px;
+  border-radius:9px;
+  border:1px solid rgba(148,163,184,0.22);
+  background:rgba(15,23,42,0.72);
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.emailCopyOption input{
+  width:16px;
+  height:16px;
+  accent-color:#2563eb;
+}
+
 .submitBtn,
 .resetBtn,
 .clearSavedBtn,
@@ -1958,6 +1980,10 @@ button:disabled{
     gap:10px;
   }
 
+  .emailCopyOption{
+    min-height:42px;
+  }
+
   .submitBtn,
   .resetBtn,
   .clearSavedBtn{
@@ -2189,6 +2215,12 @@ button:disabled{
     flex-direction:column-reverse;
     gap:10px;
     margin-top:16px;
+  }
+
+  .emailCopyOption{
+    width:100%;
+    box-sizing:border-box;
+    justify-content:center;
   }
 
   .resetBtn{
