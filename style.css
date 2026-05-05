@@ -1553,6 +1553,18 @@ button:disabled{
     width:100%;
   }
 
+  #resultsTab .sectionActions,
+  #resultsTab .applyRatingsControls{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    width:min(100%, 430px);
+    margin:0 auto;
+  }
+
+  #resultsTab .applyRatingsControls select{
+    grid-column:1 / -1;
+  }
+
   .applyRatingsPanel{
     align-items:stretch;
     flex-direction:column;
@@ -2119,7 +2131,14 @@ button:disabled{
   }
 
   #resultsTab .applyRatingsControls{
+    grid-template-columns:1fr 1fr;
     gap:8px;
+    width:min(100%, 430px);
+    margin:0 auto;
+  }
+
+  #resultsTab .applyRatingsControls select{
+    grid-column:1 / -1;
   }
 
   #resultsTab .applyRatingsControls select,
