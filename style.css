@@ -590,6 +590,80 @@ main{
   justify-content:start;
 }
 
+.verificationPanel{
+  display:none;
+  grid-column:1 / -1;
+  width:min(680px, 100%);
+  padding:14px;
+  border-radius:12px;
+  background:rgba(15,23,42,0.72);
+  border:1px solid rgba(96,165,250,0.24);
+}
+
+.verificationPanel.show{
+  display:block;
+}
+
+.verificationPanel.verified{
+  border-color:rgba(34,197,94,0.35);
+  box-shadow:0 0 16px rgba(34,197,94,0.10);
+}
+
+.verificationMessage{
+  color:#dbeafe;
+  font-size:13px;
+  line-height:1.35;
+  text-align:left;
+}
+
+.verificationMessage.warning{
+  color:#fca5a5;
+}
+
+.verificationMessage.verifiedText{
+  color:#22c55e;
+  font-weight:800;
+  letter-spacing:0.35px;
+}
+
+.verificationSubtext{
+  margin-top:5px;
+  color:#94a3b8;
+  font-size:12px;
+  line-height:1.3;
+  text-align:left;
+}
+
+.verificationControls{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:150px minmax(120px, 190px) 110px;
+  gap:10px;
+  align-items:center;
+}
+
+.verificationControls .smallBtn{
+  width:100%;
+  height:38px;
+  padding:0 10px;
+  font-size:12px;
+}
+
+.verificationCodeInput{
+  width:100%;
+  height:38px;
+  box-sizing:border-box;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,0.14);
+  background:#0f172a;
+  color:#ffffff;
+  padding:0 12px;
+  text-align:center;
+  font:inherit;
+  font-weight:800;
+  letter-spacing:1.4px;
+}
+
 label{
   color:#cbd5e1;
   font-size:12px;
@@ -1511,6 +1585,14 @@ button:disabled{
     gap:8px;
   }
 
+  .verificationPanel{
+    width:auto;
+  }
+
+  .verificationControls{
+    grid-template-columns:1fr;
+  }
+
   .resultsHeader{
     display:none;
   }
@@ -1731,6 +1813,31 @@ button:disabled{
   .weightsPanel{
     padding:12px 14px;
     margin-bottom:12px;
+  }
+
+  .raterCard{
+    grid-template-columns:140px minmax(180px, 300px) minmax(240px, 1fr);
+    gap:10px;
+  }
+
+  .verificationPanel{
+    grid-column:auto;
+    padding:10px;
+  }
+
+  .verificationControls{
+    grid-template-columns:minmax(96px, 0.8fr) minmax(90px, 1fr) minmax(80px, 0.7fr);
+    gap:7px;
+  }
+
+  .verificationControls .smallBtn,
+  .verificationCodeInput{
+    height:34px;
+    font-size:11px;
+  }
+
+  .verificationMessage{
+    font-size:12px;
   }
 
   .applyRatingsPanel{
@@ -1970,6 +2077,10 @@ button:disabled{
   .raterCard{
     text-align:center;
     padding:16px 14px;
+  }
+
+  .verificationPanel{
+    text-align:left;
   }
 
   .playerCell{
