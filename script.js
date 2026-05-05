@@ -16,14 +16,6 @@ let currentResultsSort = {
 };
 let busyActive = false;
 
-const scaleOptions = [
-  { label: "Low", value: 0 },
-  { label: "Fair", value: 2.5 },
-  { label: "Average", value: 5 },
-  { label: "Good", value: 7.5 },
-  { label: "Excellent", value: 10 }
-];
-
 const version3Categories = [
   {
     key: "combat",
@@ -219,9 +211,9 @@ const versionInfoMessages = {
   3: `
     <div class="versionInfoModal">
       <h3>V3 AVG</h3>
-      <p>Version 3 uses six category scores: Combat, Communication, Decision, Awareness, Movement, and Impact. First, each rater's six category scores become one Version 3 score. Example: Xan gives Malcolm 10, 7.5, 7.5, 5, 10, and 7.5. That becomes 47.5 / 6 = 7.9. V3 AVG then averages Malcolm's final Version 3 scores from all voters.</p>
+      <p>Version 3 uses six category scores from 0-10: Combat, Communication, Decision, Awareness, Movement, and Impact. First, each rater's six category scores become one Version 3 score. Example: Xan gives Malcolm 10, 8, 7, 5, 10, and 8. That becomes 48 / 6 = 8. V3 AVG then averages Malcolm's final Version 3 scores from all voters.</p>
       <h3>V3 MED</h3>
-      <p>Version 3 uses six category scores. First, each rater's six scores become one Version 3 score for Malcolm. Example: Xan's six category scores give Malcolm a final Version 3 score of 7.9. V3 MED then sorts Malcolm's final Version 3 scores from all voters. Example final scores: 5.8, 6.7, 6.7, 7.9, 8.3. The middle is 6.7, so Malcolm's V3 MED is 6.7.</p>
+      <p>Version 3 uses six category scores from 0-10. First, each rater's six scores become one Version 3 score for Malcolm. Example: Xan's six category scores give Malcolm a final Version 3 score of 8. V3 MED then sorts Malcolm's final Version 3 scores from all voters. Example final scores: 6, 7, 7, 8, 9. The middle is 7, so Malcolm's V3 MED is 7.</p>
       <h3>V3 WEIGHTED</h3>
       <p>V3 Weighted uses the same six Version 3 categories, but some categories count more than others. Example: Xan rates Malcolm in Combat, Communication, Decision, Awareness, Movement, and Impact. Combat affects the score more than Communication because Combat has more weight.</p>
       <div class="versionInfoWeights">
@@ -790,10 +782,6 @@ function renderVersion2Rows(){
   bindNumericSliders(rows);
 }
 
-function getScaleOption(index){
-  return scaleOptions[Math.max(0, Math.min(scaleOptions.length - 1, Number(index)))];
-}
-
 function createCategoryControl(category, disabled = false){
   return `
     <div class="categoryCell theme-${category.theme} untouched" data-category="${category.key}">
@@ -801,26 +789,35 @@ function createCategoryControl(category, disabled = false){
         <span class="categoryName">${category.label}</span>
         <span class="categoryTip" data-tip="${category.tip}">?</span>
       </div>
-      <div class="categoryControl">
-        <span class="categoryValue">-</span>
-        <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="4" step="1" value="2" data-rated="false" ${disabled ? "disabled" : ""}>
+      <div class="sliderCell categorySliderCell numericUntouched" data-slider-label="${category.label}">
+        <input class="valueBox categoryValueBox" data-category="${category.key}" type="number" min="0" max="10" step="1" value="" placeholder="-" ${disabled ? "disabled" : ""}>
+        <span class="rangeMin">0</span>
+        <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="10" step="1" value="5" data-rated="false" ${disabled ? "disabled" : ""}>
+        <span class="rangeMax">10</span>
       </div>
-      <div class="categoryScale">Not rated</div>
     </div>
   `;
 }
 
 function updateCategoryCell(cell, slider){
-  const option = getScaleOption(slider.value);
-  const value = cell.querySelector(".categoryValue");
-  const label = cell.querySelector(".categoryScale");
+  const sliderCell = slider.closest(".categorySliderCell");
+  const valueBox = cell.querySelector(`.categoryValueBox[data-category="${slider.dataset.category}"]`);
+  const rawValue = Math.max(0, Math.min(10, Math.round(Number(slider.value))));
 
   slider.dataset.rated = "true";
-  slider.dataset.value = option.value;
+  slider.dataset.value = rawValue;
+  slider.value = rawValue;
+
+  if(valueBox){
+    valueBox.value = rawValue;
+  }
+
   cell.classList.remove("untouched", "score-0", "score-1", "score-2", "score-3", "score-4");
-  cell.classList.add("score-" + slider.value);
-  value.textContent = option.value;
-  label.textContent = option.label;
+
+  if(sliderCell){
+    sliderCell.classList.remove("numericUntouched", "score-0", "score-1", "score-2", "score-3", "score-4");
+    sliderCell.classList.add("numericRated", getNumericScoreClass(rawValue));
+  }
 }
 
 function renderVersion3Rows(){
@@ -849,6 +846,18 @@ function renderVersion3Rows(){
     const slider = cell.querySelector(".categorySlider");
     if(!slider || slider.disabled) return;
     slider.addEventListener("input", () => updateCategoryCell(cell, slider));
+    cell.querySelectorAll(".categoryValueBox").forEach(box => {
+      box.addEventListener("input", () => {
+        let nextValue = Math.round(Number(box.value));
+
+        if(Number.isNaN(nextValue)) nextValue = 0;
+        nextValue = Math.max(0, Math.min(10, nextValue));
+
+        box.value = nextValue;
+        slider.value = nextValue;
+        updateCategoryCell(cell, slider);
+      });
+    });
   });
 }
 
@@ -932,11 +941,10 @@ function applySavedSubmission(version, ratings){
       version3Categories.forEach(category => {
         const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
         const cell = slider ? slider.closest(".categoryCell") : null;
-        const value = Number(rating[category.key]);
-        const optionIndex = scaleOptions.findIndex(option => Number(option.value) === value);
+        const value = Math.round(Number(rating[category.key]));
 
-        if(slider && cell && optionIndex !== -1){
-          slider.value = optionIndex;
+        if(slider && cell && !Number.isNaN(value)){
+          slider.value = Math.max(0, Math.min(10, value));
           updateCategoryCell(cell, slider);
         }
       });
@@ -1014,7 +1022,7 @@ function collectVersion3(){
           return;
         }
 
-        rating[category.key] = Number(slider.dataset.value);
+        rating[category.key] = Math.max(0, Math.min(10, Math.round(Number(slider.dataset.value))));
       });
 
       ratings.push(rating);
