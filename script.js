@@ -423,6 +423,20 @@ function isCurrentRaterVerified(){
   return !!verifiedRater && !!verifiedCode && verifiedRater === currentRaterVerification.playerName;
 }
 
+function updateRatingControlLockState(){
+  const selectedRater = currentRaterVerification.playerName;
+  const verified = isCurrentRaterVerified();
+
+  document.querySelectorAll(".ratingRow").forEach(row => {
+    const isSelf = selectedRater && row.dataset.player === selectedRater;
+    const shouldDisable = !verified || !!isSelf;
+
+    row.querySelectorAll(".ratingSlider, .valueBox").forEach(control => {
+      control.disabled = shouldDisable;
+    });
+  });
+}
+
 function formatTimeRemaining(dateValue){
   if(!dateValue) return "";
 
@@ -480,12 +494,14 @@ function renderVerificationPanels(){
     }
 
     if(verified){
+      const expiresText = formatTimeRemaining(currentRaterVerification.expiresAt);
+
       panel.innerHTML = `
         <div class="verificationMessage verifiedText">
-          VERIFIED AS ${selectedRater}
+          Verified as: ${selectedRater}
         </div>
         <div class="verificationSubtext">
-          You can submit, update, or clear saved ratings for all versions.
+          Code expires in: ${expiresText || "24h"}
         </div>
       `;
       return;
@@ -513,6 +529,7 @@ function renderVerificationPanels(){
   });
 
   updateSubmitButtons();
+  updateRatingControlLockState();
 }
 
 async function refreshRaterVerificationStatus(rater){
@@ -1014,6 +1031,7 @@ async function clearSavedVersion(version){
 function renderVersion1Rows(){
   const rows = document.getElementById("version1Rows");
   const selectedRater = document.getElementById("version1Rater").value;
+  const lockedUntilVerified = !isCurrentRaterVerified();
   rows.innerHTML = "";
 
   allPlayers
@@ -1021,12 +1039,13 @@ function renderVersion1Rows(){
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((player, index) => {
       const isSelf = selectedRater && player.name === selectedRater;
+      const disableControls = lockedUntilVerified || isSelf;
       const row = document.createElement("div");
       row.className = "ratingRow version1Row";
       row.dataset.player = player.name;
       row.innerHTML = `
         ${renderPlayerCell(player, index, selectedRater)}
-        ${createNumericSlider("overall", 5, isSelf)}
+        ${createNumericSlider("overall", 5, disableControls)}
       `;
       rows.appendChild(row);
     });
@@ -1037,6 +1056,7 @@ function renderVersion1Rows(){
 function renderVersion2Rows(){
   const rows = document.getElementById("version2Rows");
   const selectedRater = document.getElementById("version2Rater").value;
+  const lockedUntilVerified = !isCurrentRaterVerified();
   rows.innerHTML = "";
 
   allPlayers
@@ -1044,14 +1064,15 @@ function renderVersion2Rows(){
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((player, index) => {
       const isSelf = selectedRater && player.name === selectedRater;
+      const disableControls = lockedUntilVerified || isSelf;
       const row = document.createElement("div");
       row.className = "ratingRow version2Row";
       row.dataset.player = player.name;
       row.innerHTML = `
         ${renderPlayerCell(player, index, selectedRater)}
-        ${createNumericSlider("elimination", 5, isSelf)}
-        ${createNumericSlider("blitz", 5, isSelf)}
-        ${createNumericSlider("ctf", 5, isSelf)}
+        ${createNumericSlider("elimination", 5, disableControls)}
+        ${createNumericSlider("blitz", 5, disableControls)}
+        ${createNumericSlider("ctf", 5, disableControls)}
       `;
       rows.appendChild(row);
     });
@@ -1100,6 +1121,7 @@ function updateCategoryCell(cell, slider){
 function renderVersion3Rows(){
   const rows = document.getElementById("version3Rows");
   const selectedRater = document.getElementById("version3Rater").value;
+  const lockedUntilVerified = !isCurrentRaterVerified();
   rows.innerHTML = "";
 
   allPlayers
@@ -1107,13 +1129,14 @@ function renderVersion3Rows(){
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((player, index) => {
       const isSelf = selectedRater && player.name === selectedRater;
+      const disableControls = lockedUntilVerified || isSelf;
       const row = document.createElement("div");
       row.className = "ratingRow version3Row";
       row.dataset.player = player.name;
       row.innerHTML = `
         ${renderPlayerCell(player, index, selectedRater)}
         <div class="categoriesGrid">
-          ${version3Categories.map(category => createCategoryControl(category, isSelf)).join("")}
+          ${version3Categories.map(category => createCategoryControl(category, disableControls)).join("")}
         </div>
       `;
       rows.appendChild(row);
