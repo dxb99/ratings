@@ -295,13 +295,18 @@ main{
   font-family:inherit;
 }
 
-.versionKickerInfo .homeInfoIcon{
+.homeInfoIcon,
+.versionInfoBtn{
   width:22px;
   height:22px;
   min-width:22px;
+  border-radius:50%;
   border:1px solid rgba(96,165,250,0.55);
   background:#101827;
   color:#60a5fa;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   font-size:13px;
   font-weight:800;
   line-height:1;
@@ -315,11 +320,15 @@ main{
 }
 
 .versionKickerInfo:hover .homeInfoIcon,
-.versionKickerInfo:focus-visible .homeInfoIcon{
+.versionKickerInfo:focus-visible .homeInfoIcon,
+.homeInfoBtn:hover .homeInfoIcon,
+.versionInfoBtn:hover,
+.versionInfoBtn:focus-visible{
   border-color:#facc15;
   background:#facc15;
   color:#0f172a;
   box-shadow:0 0 14px rgba(250,204,21,0.28);
+  outline:none;
 }
 
 .heroPanel h2{
@@ -386,18 +395,6 @@ main{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-}
-
-.homeInfoIcon{
-  width:22px;
-  height:22px;
-  border-radius:50%;
-  background:#2563eb;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  font-weight:700;
 }
 
 .homeInfoPanel{
@@ -531,29 +528,8 @@ main{
   position:absolute;
   top:12px;
   right:12px;
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:#2563eb;
-  border:1px solid rgba(255,255,255,0.30);
-  color:#ffffff;
-  font-size:15px;
-  font-weight:700;
-  line-height:1;
   cursor:pointer;
-  box-shadow:
-    0 8px 18px rgba(0,0,0,0.26),
-    inset 0 1px 0 rgba(255,255,255,0.18);
-}
-
-.versionInfoBtn:hover,
-.versionInfoBtn:focus-visible{
-  background:#facc15;
-  color:#0f172a;
-  outline:none;
+  z-index:2;
 }
 
 .versionLaunch span{
