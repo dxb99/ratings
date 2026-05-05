@@ -1733,6 +1733,34 @@ button:disabled{
     margin-bottom:12px;
   }
 
+  .applyRatingsPanel{
+    display:grid;
+    grid-template-columns:minmax(170px, 0.75fr) minmax(0, 1.25fr);
+    align-items:center;
+    gap:12px;
+  }
+
+  .applyRatingsPanel > div:first-child{
+    min-width:0;
+  }
+
+  .applyRatingsPanel p{
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  .applyRatingsControls{
+    grid-template-columns:minmax(170px, 1fr) minmax(120px, 0.7fr) minmax(140px, 0.8fr);
+    gap:8px;
+    min-width:0;
+  }
+
+  .applyRatingsControls select,
+  .applyRatingsControls .smallBtn{
+    height:38px;
+    font-size:12px;
+  }
+
   .ratingTableHeader,
   .resultsHeader,
   .statusHeader{
