@@ -618,6 +618,16 @@ select{
   font-weight:600;
 }
 
+.ratingTableHeader > div{
+  text-align:center;
+  justify-self:center;
+}
+
+.ratingTableHeader > div:first-child{
+  text-align:left;
+  justify-self:stretch;
+}
+
 .v1Header,
 .version1Row{
   grid-template-columns:minmax(140px, 0.55fr) minmax(360px, 2.45fr);
