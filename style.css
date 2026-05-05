@@ -2084,6 +2084,49 @@ button:disabled{
     max-width:330px;
   }
 
+  #resultsTab .sectionHeader{
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  #resultsTab .sectionActions{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    width:min(100%, 430px);
+    margin:0 auto;
+  }
+
+  #resultsTab .sectionActions .homeInfoBtn,
+  #resultsTab .sectionActions .smallBtn{
+    height:40px;
+    min-width:0;
+    padding:0 8px;
+    font-size:11px;
+  }
+
+  #resultsTab .applyRatingsPanel{
+    gap:12px;
+    padding:14px;
+    text-align:center;
+  }
+
+  #resultsTab .applyRatingsPanel p{
+    max-width:320px;
+    margin:0 auto;
+    text-align:center;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  #resultsTab .applyRatingsControls{
+    gap:8px;
+  }
+
+  #resultsTab .applyRatingsControls select,
+  #resultsTab .applyRatingsControls .smallBtn{
+    height:40px;
+  }
+
   .versionLaunch{
     min-height:112px;
     padding:18px 16px;
