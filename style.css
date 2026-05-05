@@ -284,6 +284,35 @@ main{
   margin-bottom:12px;
 }
 
+.versionKickerInfo{
+  border:none;
+  background:transparent;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.versionKickerInfo .homeInfoIcon{
+  width:20px;
+  height:20px;
+  font-size:12px;
+}
+
+.versionKickerInfo:hover,
+.versionKickerInfo:focus-visible{
+  color:#ffffff;
+  outline:none;
+}
+
+.versionKickerInfo:hover .homeInfoIcon,
+.versionKickerInfo:focus-visible .homeInfoIcon{
+  background:#facc15;
+  color:#0f172a;
+}
+
 .heroPanel h2{
   font-size:clamp(30px, 5vw, 58px);
   margin-bottom:12px;
