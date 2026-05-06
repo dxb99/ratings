@@ -743,6 +743,18 @@ select{
   grid-template-columns:1fr;
 }
 
+.v1Header .categoryTip{
+  width:22px;
+  height:22px;
+  min-width:22px;
+  flex:0 0 22px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  line-height:1;
+}
+
 .v2Header,
 .version2Row{
   grid-template-columns:minmax(130px, 0.55fr) repeat(3, minmax(220px, 1.15fr));
@@ -2469,4 +2481,43 @@ button:disabled{
     min-width:0;
     justify-content:center;
   }
+}
+
+/* BACKGROUND CONSISTENCY PASS */
+:root{
+  --ratings-panel-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)),
+    rgba(10,15,26,0.90);
+  --ratings-header-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.052), rgba(255,255,255,0.026)),
+    rgba(15,23,42,0.72);
+  --ratings-row-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.034), rgba(255,255,255,0.016)),
+    rgba(8,13,24,0.62);
+}
+
+.heroPanel,
+.raterCard,
+.ratingTableShell,
+.applyRatingsPanel,
+.weightsPanel,
+.resultsShell,
+.statusShell{
+  background:var(--ratings-panel-bg);
+}
+
+.ratingTableHeader,
+.resultsHeader,
+.statusHeader,
+.version2ModeHeader,
+.version3CategoryHeader{
+  background:var(--ratings-header-bg);
+}
+
+.ratingRow,
+.version2ModePlayerRow,
+.version3CategoryPlayerRow,
+.resultsRow,
+.statusRow{
+  background:var(--ratings-row-bg);
 }
