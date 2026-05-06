@@ -85,7 +85,7 @@ const version2Modes = [
   },
   {
     key: "ctf",
-    label: "CTF",
+    label: "CAPTURE THE FLAG",
     tip: "Overall Capture the Flag performance."
   }
 ];
@@ -1314,8 +1314,8 @@ function renderVersion2Rows(){
     section.innerHTML = `
       <div class="version2ModeHeader">
         <div class="versionSectionTitleGroup">
+          <span class="categoryTip" data-tip="${mode.tip}">i</span>
           <span class="version2ModeTitle">${mode.label}</span>
-          <span class="categoryTip" data-tip="${mode.tip}">?</span>
           <span class="version2ModeRange">0-10</span>
         </div>
       </div>
@@ -1462,8 +1462,8 @@ function renderVersion3Rows(){
     section.innerHTML = `
       <div class="version3CategoryHeader">
         <div class="versionSectionTitleGroup">
+          <span class="categoryTip" data-tip="${category.tip}">i</span>
           <span class="version3CategoryTitle">${category.label}</span>
-          <span class="categoryTip" data-tip="${category.tip}">?</span>
           <span class="version3CategoryRange">0-10</span>
         </div>
       </div>
