@@ -983,13 +983,18 @@ select{
 .version2ModeHeader,
 .version3CategoryHeader{
   min-height:58px;
-  padding:12px 18px;
+  padding:0 18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:14px;
-  background:rgba(255,255,255,0.045);
+  gap:8px;
+  background:rgba(255,255,255,0.035);
   border-bottom:1px solid rgba(255,255,255,0.08);
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.45px;
+  text-transform:uppercase;
 }
 
 .version2ModeHeader > div,
@@ -1006,7 +1011,7 @@ select{
 }
 
 .versionSectionTitleGroup .categoryTip{
-  position:static;
+  position:relative;
 }
 
 .versionSectionTitleGroup .version2ModeRange,
@@ -1709,18 +1714,18 @@ button:disabled{
 
   .version2ModeHeader,
   .version3CategoryHeader{
-    padding:14px 16px;
+    padding:0 16px;
   }
 
   .version2ModePlayerRow,
   .version3CategoryPlayerRow{
-    grid-template-columns:1fr;
-    align-items:stretch;
-    gap:16px;
-    padding:18px;
-    margin:12px 8px;
-    border:1px solid rgba(255,255,255,0.10);
-    border-radius:16px;
+    grid-template-columns:minmax(112px, 0.8fr) minmax(0, 1.4fr);
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    margin:0;
+    border:none;
+    border-radius:0;
     background:rgba(255,255,255,0.025);
   }
 
@@ -2040,9 +2045,9 @@ button:disabled{
 
   .version2ModePlayerRow,
   .version3CategoryPlayerRow{
-    min-height:58px;
-    padding:10px 12px;
-    gap:10px;
+    min-height:54px;
+    padding:8px 10px;
+    gap:8px;
   }
 
   .playerCell{
@@ -2102,12 +2107,12 @@ button:disabled{
 
   .version3CategoryPlayerRow .categorySliderCell{
     margin-top:0;
-    grid-template-columns:16px minmax(90px, 1fr) 20px 46px;
+    grid-template-columns:14px minmax(64px, 1fr) 18px 42px;
   }
 
   .version2ModePlayerRow .sliderCell{
     margin-top:0;
-    grid-template-columns:16px minmax(90px, 1fr) 20px 46px;
+    grid-template-columns:14px minmax(64px, 1fr) 18px 42px;
   }
 
   .submitRow{
@@ -2367,16 +2372,18 @@ button:disabled{
 
   .version2ModeHeader,
   .version3CategoryHeader{
-    align-items:flex-start;
+    align-items:center;
   }
 
   .version2ModePlayerRow,
   .version3CategoryPlayerRow{
-    grid-template-columns:1fr;
-    padding:18px;
-    margin:12px 8px;
-    border:1px solid rgba(255,255,255,0.10);
-    border-radius:16px;
+    grid-template-columns:minmax(112px, 0.8fr) minmax(0, 1.4fr);
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    margin:0;
+    border:none;
+    border-radius:0;
     background:rgba(255,255,255,0.025);
   }
 
