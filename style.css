@@ -679,6 +679,11 @@ select{
   overflow:hidden;
 }
 
+#version2Tab .ratingTableShell,
+#version3Tab .ratingTableShell{
+  overflow:visible;
+}
+
 .ratingTableHeader,
 .ratingRow,
 .resultsHeader,
@@ -981,10 +986,33 @@ select{
   padding:12px 18px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:center;
   gap:14px;
   background:rgba(255,255,255,0.045);
   border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.version2ModeHeader > div,
+.version3CategoryHeader > div{
+  text-align:center;
+}
+
+.versionSectionTitleGroup{
+  display:grid;
+  grid-template-columns:auto auto;
+  align-items:center;
+  justify-content:center;
+  column-gap:8px;
+}
+
+.versionSectionTitleGroup .categoryTip{
+  position:static;
+}
+
+.versionSectionTitleGroup .version2ModeRange,
+.versionSectionTitleGroup .version3CategoryRange{
+  grid-column:1 / -1;
+  justify-self:center;
 }
 
 .version2ModeTitle,
