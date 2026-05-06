@@ -1357,23 +1357,6 @@ function getVersion2Slider(playerName, field){
   return row ? row.querySelector(`.ratingSlider[data-field="${field}"]`) : null;
 }
 
-function createCategoryControl(category, disabled = false){
-  return `
-    <div class="categoryCell theme-${category.theme} untouched" data-category="${category.key}">
-      <div class="categoryTop">
-        <span class="categoryName">${category.label}</span>
-        <span class="categoryTip" data-tip="${category.tip}">?</span>
-      </div>
-      <div class="sliderCell categorySliderCell numericUntouched" data-slider-label="${category.label}">
-        <input class="valueBox categoryValueBox" data-category="${category.key}" type="number" min="0" max="10" step="1" value="" placeholder="-" ${disabled ? "disabled" : ""}>
-        <span class="rangeMin">0</span>
-        <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="10" step="1" value="5" data-rated="false" ${disabled ? "disabled" : ""}>
-        <span class="rangeMax">10</span>
-      </div>
-    </div>
-  `;
-}
-
 function createCategorySliderControl(category, disabled = false){
   return `
     <div class="sliderCell categorySliderCell numericUntouched" data-slider-label="${category.label}">
