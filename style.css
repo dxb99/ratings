@@ -681,6 +681,12 @@ select{
   overflow:hidden;
 }
 
+#version1Tab .ratingTableShell{
+  overflow:visible;
+  position:relative;
+  z-index:5;
+}
+
 #version2Tab .ratingTableShell,
 #version3Tab .ratingTableShell{
   overflow:visible;
@@ -754,6 +760,11 @@ select{
   justify-content:center;
   margin:0;
   line-height:1;
+}
+
+.v1Header .categoryTip:hover::after{
+  top:calc(100% + 8px);
+  bottom:auto;
 }
 
 .v2Header,
@@ -2375,21 +2386,14 @@ button:disabled{
   }
 
   .sliderCell{
-    grid-template-columns:24px minmax(0, 1fr) 26px 60px;
-    gap:10px;
-    padding:14px;
+    grid-template-columns:18px minmax(0, 1fr) 22px 48px;
+    gap:7px;
+    padding:8px;
     border-radius:12px;
   }
 
   .sliderCell::before{
-    content:attr(data-slider-label);
-    grid-column:1 / -1;
-    color:#cbd5e1;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:0.35px;
-    text-align:left;
-    text-transform:uppercase;
+    content:none;
   }
 
   .sliderCell .rangeMin{
@@ -2407,13 +2411,21 @@ button:disabled{
 
   .valueBox{
     grid-column:4;
-    height:44px;
-    font-size:16px;
+    width:48px;
+    height:38px;
+    font-size:15px;
     border-radius:10px;
   }
 
   .ratingRow .playerCell{
     padding-bottom:2px;
+  }
+
+  .version1Row{
+    grid-template-columns:minmax(96px, 0.72fr) minmax(0, 1.55fr);
+    align-items:center;
+    gap:6px;
+    padding:8px;
   }
 
   .version2ModeHeader,
@@ -2423,10 +2435,10 @@ button:disabled{
 
   .version2ModePlayerRow,
   .version3CategoryPlayerRow{
-    grid-template-columns:minmax(112px, 0.8fr) minmax(0, 1.4fr);
+    grid-template-columns:minmax(96px, 0.72fr) minmax(0, 1.55fr);
     align-items:center;
-    gap:8px;
-    padding:8px 10px;
+    gap:6px;
+    padding:8px;
     margin:0;
     border:none;
     border-radius:0;
@@ -2452,8 +2464,8 @@ button:disabled{
   }
 
   .categorySliderCell{
-    grid-template-columns:24px minmax(0, 1fr) 26px 60px;
-    gap:10px;
+    grid-template-columns:18px minmax(0, 1fr) 22px 48px;
+    gap:7px;
   }
 
   .submitBtn{
@@ -2517,9 +2529,12 @@ button:disabled{
 }
 
 .ratingRow,
-.version2ModePlayerRow,
-.version3CategoryPlayerRow,
 .resultsRow,
 .statusRow{
   background:var(--ratings-row-bg);
+}
+
+.version2ModePlayerRow,
+.version3CategoryPlayerRow{
+  background:transparent;
 }
