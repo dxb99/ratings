@@ -20,6 +20,18 @@ body{
   line-height:1.45;
 }
 
+:root{
+  --ratings-panel-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)),
+    rgba(10,15,26,0.90);
+  --ratings-header-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.052), rgba(255,255,255,0.026)),
+    rgba(15,23,42,0.72);
+  --ratings-row-bg:
+    linear-gradient(180deg, rgba(255,255,255,0.034), rgba(255,255,255,0.016)),
+    rgba(8,13,24,0.62);
+}
+
 button,
 select,
 input{
@@ -257,9 +269,7 @@ main{
 .weightsPanel,
 .resultsShell,
 .statusShell{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)),
-    rgba(10,15,26,0.88);
+  background:var(--ratings-panel-bg);
   border:1px solid rgba(255,255,255,0.12);
   border-radius:16px;
   box-shadow:0 18px 48px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -708,12 +718,16 @@ select{
   min-height:58px;
   padding:0 18px;
   gap:14px;
-  background:rgba(255,255,255,0.035);
+  background:transparent;
   color:#cbd5e1;
   font-size:13px;
   font-weight:800;
   letter-spacing:0.45px;
   text-transform:uppercase;
+}
+
+.resultsHeader{
+  background:var(--ratings-header-bg);
 }
 
 .ratingTableHeader span{
@@ -773,20 +787,11 @@ select{
   background:#020617;
 }
 
-.v2Header,
-.version2Row{
-  grid-template-columns:minmax(130px, 0.55fr) repeat(3, minmax(220px, 1.15fr));
-}
-
-.v3Header,
-.version3Row{
-  grid-template-columns:minmax(140px, 0.48fr) minmax(0, 2.52fr);
-}
-
 .ratingRow{
   min-height:76px;
   padding:14px 18px;
   gap:14px;
+  background:var(--ratings-row-bg);
 }
 
 .ratingRow:last-child,
@@ -947,35 +952,6 @@ select{
   box-shadow:none;
 }
 
-.categoriesGrid{
-  display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
-  gap:12px;
-}
-
-.categoryCell{
-  padding:12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.035);
-  transition:all 0.16s ease;
-}
-
-.categoryTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  min-height:34px;
-}
-
-.categoryName{
-  font-size:12px;
-  font-weight:700;
-  line-height:1.2;
-  color:#f8fafc;
-}
-
 .categoryTip{
   position:relative;
   width:22px;
@@ -1045,7 +1021,7 @@ select{
   align-items:center;
   justify-content:flex-start;
   gap:8px;
-  background:rgba(255,255,255,0.035);
+  background:transparent;
   border-bottom:1px solid rgba(255,255,255,0.08);
   color:#cbd5e1;
   font-size:13px;
@@ -1301,7 +1277,7 @@ button:disabled{
 .statusHeader{
   min-height:58px;
   padding:0;
-  background:rgba(255,255,255,0.035);
+  background:var(--ratings-header-bg);
   color:#cbd5e1;
   font-size:13px;
   font-weight:800;
@@ -1314,6 +1290,7 @@ button:disabled{
   padding:0;
   color:#e2e8f0;
   font-size:14px;
+  background:var(--ratings-row-bg);
 }
 
 .statusHeader > div,
@@ -1507,6 +1484,7 @@ button:disabled{
   padding:0 18px;
   color:#e2e8f0;
   font-size:14px;
+  background:var(--ratings-row-bg);
 }
 
 .resultsRow > div{
@@ -1742,7 +1720,6 @@ button:disabled{
   }
 
   .versionButtons,
-  .categoriesGrid,
   .weightsGrid,
   .infoWeightsList,
   .homeInfoExamples{
@@ -1750,11 +1727,7 @@ button:disabled{
   }
 
   .v1Header,
-  .version1Row,
-  .v2Header,
-  .version2Row,
-  .v3Header,
-  .version3Row{
+  .version1Row{
     grid-template-columns:1fr;
   }
 
@@ -1775,7 +1748,7 @@ button:disabled{
     margin:12px 8px;
     border:1px solid rgba(255,255,255,0.10);
     border-radius:16px;
-    background:rgba(255,255,255,0.025);
+    background:var(--ratings-row-bg);
   }
 
   .version2ModeHeader,
@@ -1792,7 +1765,7 @@ button:disabled{
     margin:0;
     border:none;
     border-radius:0;
-    background:rgba(255,255,255,0.025);
+    background:transparent;
   }
 
   .raterCard{
@@ -1857,7 +1830,7 @@ button:disabled{
     margin:12px;
     border:1px solid rgba(255,255,255,0.10);
     border-radius:14px;
-    background:rgba(255,255,255,0.025);
+    background:var(--ratings-row-bg);
   }
 
   .resultsRow > div{
@@ -1902,7 +1875,7 @@ button:disabled{
     margin:12px;
     border:1px solid rgba(255,255,255,0.10);
     border-radius:14px;
-    background:rgba(255,255,255,0.025);
+    background:var(--ratings-row-bg);
   }
 
   .statusRow > div{
@@ -2146,19 +2119,6 @@ button:disabled{
     width:46px;
     height:32px;
     font-size:15px;
-  }
-
-  .categoriesGrid{
-    gap:8px;
-  }
-
-  .categoryCell{
-    padding:9px;
-    border-radius:10px;
-  }
-
-  .categoryName{
-    font-size:11px;
   }
 
   .categoryTip{
@@ -2454,25 +2414,12 @@ button:disabled{
     margin:0;
     border:none;
     border-radius:0;
-    background:rgba(255,255,255,0.025);
+    background:transparent;
   }
 
   .version2ModePlayerRow .playerCell,
   .version3CategoryPlayerRow .playerCell{
     padding-bottom:2px;
-  }
-
-  .categoryCell{
-    padding:14px;
-    border-radius:12px;
-  }
-
-  .categoryTop{
-    min-height:auto;
-  }
-
-  .categoryName{
-    font-size:13px;
   }
 
   .categorySliderCell{
@@ -2507,49 +2454,4 @@ button:disabled{
     min-width:0;
     justify-content:center;
   }
-}
-
-/* BACKGROUND CONSISTENCY PASS */
-:root{
-  --ratings-panel-bg:
-    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)),
-    rgba(10,15,26,0.90);
-  --ratings-header-bg:
-    linear-gradient(180deg, rgba(255,255,255,0.052), rgba(255,255,255,0.026)),
-    rgba(15,23,42,0.72);
-  --ratings-row-bg:
-    linear-gradient(180deg, rgba(255,255,255,0.034), rgba(255,255,255,0.016)),
-    rgba(8,13,24,0.62);
-}
-
-.heroPanel,
-.raterCard,
-.ratingTableShell,
-.applyRatingsPanel,
-.weightsPanel,
-.resultsShell,
-.statusShell{
-  background:var(--ratings-panel-bg);
-}
-
-.resultsHeader,
-.statusHeader{
-  background:var(--ratings-header-bg);
-}
-
-.ratingTableHeader,
-.version2ModeHeader,
-.version3CategoryHeader{
-  background:transparent;
-}
-
-.ratingRow,
-.resultsRow,
-.statusRow{
-  background:var(--ratings-row-bg);
-}
-
-.version2ModePlayerRow,
-.version3CategoryPlayerRow{
-  background:transparent;
 }
