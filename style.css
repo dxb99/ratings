@@ -2532,12 +2532,15 @@ button:disabled{
   background:var(--ratings-panel-bg);
 }
 
-.ratingTableHeader,
 .resultsHeader,
-.statusHeader,
+.statusHeader{
+  background:var(--ratings-header-bg);
+}
+
+.ratingTableHeader,
 .version2ModeHeader,
 .version3CategoryHeader{
-  background:var(--ratings-header-bg);
+  background:transparent;
 }
 
 .ratingRow,
