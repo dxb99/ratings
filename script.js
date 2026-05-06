@@ -72,6 +72,24 @@ const version3Categories = [
   }
 ].sort((a, b) => a.label.localeCompare(b.label));
 
+const version2Modes = [
+  {
+    key: "elimination",
+    label: "ELIMINATION",
+    tip: "Overall Elimination performance."
+  },
+  {
+    key: "blitz",
+    label: "BLITZ",
+    tip: "Overall Blitz performance."
+  },
+  {
+    key: "ctf",
+    label: "CTF",
+    tip: "Overall Capture the Flag performance."
+  }
+];
+
 window.addEventListener("load", async () => {
   try{
     setupTabs();
@@ -484,7 +502,7 @@ function updateRatingControlLockState(){
   const selectedRater = currentRaterVerification.playerName;
   const verified = isCurrentRaterVerified();
 
-  document.querySelectorAll(".ratingRow").forEach(row => {
+  document.querySelectorAll(".ratingRow, .version2ModePlayerRow, .version3CategoryPlayerRow").forEach(row => {
     const isSelf = selectedRater && row.dataset.player === selectedRater;
     const shouldDisable = !verified || !!isSelf;
 
@@ -582,6 +600,50 @@ function getVersionFormSnapshot(version){
     return JSON.stringify({ rater: "", ratings: [] });
   }
 
+  if(version === 3){
+    const players = allPlayers
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(player => player.name !== rater);
+
+    const ratings = players.map(player => {
+      const rating = { ratedPlayer: player.name };
+
+      version3Categories.forEach(category => {
+        const slider = getVersion3Slider(player.name, category.key);
+        rating[category.key] = slider && slider.dataset.rated === "true"
+          ? Math.max(0, Math.min(10, Math.round(Number(slider.dataset.value))))
+          : null;
+      });
+
+      return rating;
+    });
+
+    return JSON.stringify({ rater, ratings });
+  }
+
+  if(version === 2){
+    const players = allPlayers
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(player => player.name !== rater);
+
+    const ratings = players.map(player => {
+      const rating = { ratedPlayer: player.name };
+
+      version2Modes.forEach(mode => {
+        const slider = getVersion2Slider(player.name, mode.key);
+        rating[mode.key] = slider && slider.dataset.rated === "true"
+          ? Number(slider.value)
+          : null;
+      });
+
+      return rating;
+    });
+
+    return JSON.stringify({ rater, ratings });
+  }
+
   const rows = Array.from(document.querySelectorAll(`#version${version}Rows .ratingRow`))
     .filter(row => row.dataset.player !== rater);
 
@@ -593,24 +655,6 @@ function getVersionFormSnapshot(version){
       rating.overall = slider && slider.dataset.rated === "true"
         ? Number(slider.value)
         : null;
-    }
-
-    if(version === 2){
-      ["elimination", "blitz", "ctf"].forEach(field => {
-        const slider = row.querySelector(`.ratingSlider[data-field="${field}"]`);
-        rating[field] = slider && slider.dataset.rated === "true"
-          ? Number(slider.value)
-          : null;
-      });
-    }
-
-    if(version === 3){
-      version3Categories.forEach(category => {
-        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
-        rating[category.key] = slider && slider.dataset.rated === "true"
-          ? Math.max(0, Math.min(10, Math.round(Number(slider.dataset.value))))
-          : null;
-      });
     }
 
     return rating;
@@ -1259,25 +1303,58 @@ function renderVersion2Rows(){
   const lockedUntilVerified = !isCurrentRaterVerified();
   rows.innerHTML = "";
 
-  allPlayers
+  const players = allPlayers
     .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  version2Modes.forEach(mode => {
+    const section = document.createElement("div");
+    section.className = "version2ModeSection";
+    section.dataset.field = mode.key;
+    section.innerHTML = `
+      <div class="version2ModeHeader">
+        <div>
+          <span class="version2ModeTitle">${mode.label}</span>
+          <span class="version2ModeRange">0-10</span>
+        </div>
+        <span class="categoryTip" data-tip="${mode.tip}">?</span>
+      </div>
+      <div class="version2ModePlayers"></div>
+    `;
+
+    const playerRows = section.querySelector(".version2ModePlayers");
+
+    players.forEach((player, index) => {
       const isSelf = selectedRater && player.name === selectedRater;
       const disableControls = lockedUntilVerified || isSelf;
       const row = document.createElement("div");
-      row.className = "ratingRow version2Row";
+      row.className = "version2ModePlayerRow";
       row.dataset.player = player.name;
+      row.dataset.field = mode.key;
       row.innerHTML = `
         ${renderPlayerCell(player, index, selectedRater)}
-        ${createNumericSlider("elimination", 5, disableControls)}
-        ${createNumericSlider("blitz", 5, disableControls)}
-        ${createNumericSlider("ctf", 5, disableControls)}
+        ${createNumericSlider(mode.key, 5, disableControls)}
       `;
-      rows.appendChild(row);
+      playerRows.appendChild(row);
     });
 
+    rows.appendChild(section);
+  });
+
   bindNumericSliders(rows);
+}
+
+function getVersion2ModeRows(field){
+  return Array.from(
+    document.querySelectorAll(`#version2Rows .version2ModeSection[data-field="${field}"] .version2ModePlayerRow`)
+  );
+}
+
+function getVersion2Slider(playerName, field){
+  const row = getVersion2ModeRows(field)
+    .find(item => item.dataset.player === playerName);
+
+  return row ? row.querySelector(`.ratingSlider[data-field="${field}"]`) : null;
 }
 
 function createCategoryControl(category, disabled = false){
@@ -1293,6 +1370,17 @@ function createCategoryControl(category, disabled = false){
         <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="10" step="1" value="5" data-rated="false" ${disabled ? "disabled" : ""}>
         <span class="rangeMax">10</span>
       </div>
+    </div>
+  `;
+}
+
+function createCategorySliderControl(category, disabled = false){
+  return `
+    <div class="sliderCell categorySliderCell numericUntouched" data-slider-label="${category.label}">
+      <input class="valueBox categoryValueBox" data-category="${category.key}" type="number" min="0" max="10" step="1" value="" placeholder="-" ${disabled ? "disabled" : ""}>
+      <span class="rangeMin">0</span>
+      <input class="ratingSlider categorySlider" data-category="${category.key}" type="range" min="0" max="10" step="1" value="5" data-rated="false" ${disabled ? "disabled" : ""}>
+      <span class="rangeMax">10</span>
     </div>
   `;
 }
@@ -1318,38 +1406,30 @@ function updateCategoryCell(cell, slider){
   }
 }
 
-function renderVersion3Rows(){
-  const rows = document.getElementById("version3Rows");
-  const selectedRater = document.getElementById("version3Rater").value;
-  const lockedUntilVerified = !isCurrentRaterVerified();
-  rows.innerHTML = "";
+function getVersion3CategoryRows(categoryKey){
+  return Array.from(
+    document.querySelectorAll(`#version3Rows .version3CategorySection[data-category="${categoryKey}"] .version3CategoryPlayerRow`)
+  );
+}
 
-  allPlayers
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach((player, index) => {
-      const isSelf = selectedRater && player.name === selectedRater;
-      const disableControls = lockedUntilVerified || isSelf;
-      const row = document.createElement("div");
-      row.className = "ratingRow version3Row";
-      row.dataset.player = player.name;
-      row.innerHTML = `
-        ${renderPlayerCell(player, index, selectedRater)}
-        <div class="categoriesGrid">
-          ${version3Categories.map(category => createCategoryControl(category, disableControls)).join("")}
-        </div>
-      `;
-      rows.appendChild(row);
-    });
+function getVersion3Slider(playerName, categoryKey){
+  const row = getVersion3CategoryRows(categoryKey)
+    .find(item => item.dataset.player === playerName);
 
-  rows.querySelectorAll(".categoryCell").forEach(cell => {
-    const slider = cell.querySelector(".categorySlider");
+  return row ? row.querySelector(`.categorySlider[data-category="${categoryKey}"]`) : null;
+}
+
+function bindVersion3CategoryControls(container){
+  container.querySelectorAll(".version3CategoryPlayerRow").forEach(row => {
+    const slider = row.querySelector(".categorySlider");
     if(!slider) return;
+
     slider.addEventListener("input", () => {
-      updateCategoryCell(cell, slider);
+      updateCategoryCell(row, slider);
       updateSubmitButtons();
     });
-    cell.querySelectorAll(".categoryValueBox").forEach(box => {
+
+    row.querySelectorAll(".categoryValueBox").forEach(box => {
       box.addEventListener("input", () => {
         let nextValue = Math.round(Number(box.value));
 
@@ -1358,11 +1438,58 @@ function renderVersion3Rows(){
 
         box.value = nextValue;
         slider.value = nextValue;
-        updateCategoryCell(cell, slider);
+        updateCategoryCell(row, slider);
         updateSubmitButtons();
       });
     });
   });
+}
+
+function renderVersion3Rows(){
+  const rows = document.getElementById("version3Rows");
+  const selectedRater = document.getElementById("version3Rater").value;
+  const lockedUntilVerified = !isCurrentRaterVerified();
+  rows.innerHTML = "";
+
+  const players = allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  version3Categories.forEach(category => {
+    const section = document.createElement("div");
+    section.className = `version3CategorySection theme-${category.theme}`;
+    section.dataset.category = category.key;
+    section.innerHTML = `
+      <div class="version3CategoryHeader">
+        <div>
+          <span class="version3CategoryTitle">${category.label}</span>
+          <span class="version3CategoryRange">0-10</span>
+        </div>
+        <span class="categoryTip" data-tip="${category.tip}">?</span>
+      </div>
+      <div class="version3CategoryPlayers"></div>
+    `;
+
+    const playerRows = section.querySelector(".version3CategoryPlayers");
+
+    players.forEach((player, index) => {
+      const isSelf = selectedRater && player.name === selectedRater;
+      const disableControls = lockedUntilVerified || isSelf;
+      const row = document.createElement("div");
+      row.className = `version3CategoryPlayerRow theme-${category.theme} untouched`;
+      row.dataset.player = player.name;
+      row.dataset.category = category.key;
+      row.innerHTML = `
+        ${renderPlayerCell(player, index, selectedRater)}
+        ${createCategorySliderControl(category, disableControls)}
+      `;
+      playerRows.appendChild(row);
+    });
+
+    rows.appendChild(section);
+  });
+
+  bindVersion3CategoryControls(rows);
 }
 
 document.addEventListener("change", async e => {
@@ -1442,6 +1569,41 @@ function applySavedSubmission(version, ratings){
     }
   });
 
+  if(version === 3){
+    Object.keys(byPlayer).forEach(playerName => {
+      const rating = byPlayer[playerName];
+
+      version3Categories.forEach(category => {
+        const slider = getVersion3Slider(playerName, category.key);
+        const row = slider ? slider.closest(".version3CategoryPlayerRow") : null;
+        const value = Math.round(Number(rating[category.key]));
+
+        if(slider && row && !Number.isNaN(value)){
+          slider.value = Math.max(0, Math.min(10, value));
+          updateCategoryCell(row, slider);
+        }
+      });
+    });
+
+    captureVersionBaseline(version);
+    return;
+  }
+
+  if(version === 2){
+    Object.keys(byPlayer).forEach(playerName => {
+      const rating = byPlayer[playerName];
+
+      version2Modes.forEach(mode => {
+        const slider = getVersion2Slider(playerName, mode.key);
+        const cell = slider ? slider.closest(".sliderCell") : null;
+        markNumericRated(cell, rating[mode.key]);
+      });
+    });
+
+    captureVersionBaseline(version);
+    return;
+  }
+
   const rows = document.querySelectorAll(`#version${version}Rows .ratingRow`);
 
   rows.forEach(row => {
@@ -1453,26 +1615,6 @@ function applySavedSubmission(version, ratings){
       markNumericRated(cell, rating.overall);
     }
 
-    if(version === 2){
-      ["elimination", "blitz", "ctf"].forEach(field => {
-        const slider = row.querySelector(`.ratingSlider[data-field="${field}"]`);
-        const cell = slider ? slider.closest(".sliderCell") : null;
-        markNumericRated(cell, rating[field]);
-      });
-    }
-
-    if(version === 3){
-      version3Categories.forEach(category => {
-        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
-        const cell = slider ? slider.closest(".categoryCell") : null;
-        const value = Math.round(Number(rating[category.key]));
-
-        if(slider && cell && !Number.isNaN(value)){
-          slider.value = Math.max(0, Math.min(10, value));
-          updateCategoryCell(cell, slider);
-        }
-      });
-    }
   });
 
   captureVersionBaseline(version);
@@ -1512,20 +1654,22 @@ function collectVersion2(){
   const rater = getRaterForVersion(2);
   if(!rater) return { ok: false, error: "Select your name before submitting Version 2." };
 
-  const ratings = Array.from(document.querySelectorAll("#version2Rows .ratingRow"))
-    .filter(row => row.dataset.player !== rater)
-    .map(row => ({
-      ratedPlayer: row.dataset.player,
-      elimination: row.querySelector('.ratingSlider[data-field="elimination"]').dataset.rated === "true"
-        ? Number(row.querySelector('.ratingSlider[data-field="elimination"]').value)
-        : null,
-      blitz: row.querySelector('.ratingSlider[data-field="blitz"]').dataset.rated === "true"
-        ? Number(row.querySelector('.ratingSlider[data-field="blitz"]').value)
-        : null,
-      ctf: row.querySelector('.ratingSlider[data-field="ctf"]').dataset.rated === "true"
-        ? Number(row.querySelector('.ratingSlider[data-field="ctf"]').value)
-        : null
-    }));
+  const ratings = allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter(player => player.name !== rater)
+    .map(player => {
+      const rating = { ratedPlayer: player.name };
+
+      version2Modes.forEach(mode => {
+        const slider = getVersion2Slider(player.name, mode.key);
+        rating[mode.key] = slider && slider.dataset.rated === "true"
+          ? Number(slider.value)
+          : null;
+      });
+
+      return rating;
+    });
 
   if(ratings.some(rating => rating.elimination === null || rating.blitz === null || rating.ctf === null)){
     return { ok: false, error: "Please rate every Version 2 mode before submitting." };
@@ -1541,13 +1685,15 @@ function collectVersion3(){
   const ratings = [];
   let missing = false;
 
-  Array.from(document.querySelectorAll("#version3Rows .ratingRow"))
-    .filter(row => row.dataset.player !== rater)
-    .forEach(row => {
-      const rating = { ratedPlayer: row.dataset.player };
+  allPlayers
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter(player => player.name !== rater)
+    .forEach(player => {
+      const rating = { ratedPlayer: player.name };
 
       version3Categories.forEach(category => {
-        const slider = row.querySelector(`.categorySlider[data-category="${category.key}"]`);
+        const slider = getVersion3Slider(player.name, category.key);
         if(!slider || slider.dataset.rated !== "true"){
           missing = true;
           return;
