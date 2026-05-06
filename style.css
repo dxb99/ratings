@@ -738,6 +738,10 @@ select{
   grid-template-columns:minmax(140px, 0.55fr) minmax(360px, 2.45fr);
 }
 
+.v1Header{
+  grid-template-columns:1fr;
+}
+
 .v2Header,
 .version2Row{
   grid-template-columns:minmax(130px, 0.55fr) repeat(3, minmax(220px, 1.15fr));
@@ -943,16 +947,22 @@ select{
 
 .categoryTip{
   position:relative;
-  width:20px;
-  height:20px;
+  width:22px;
+  height:22px;
+  min-width:22px;
+  flex:0 0 22px;
+  box-sizing:border-box;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   border-radius:50%;
-  background:rgba(255,255,255,0.08);
-  color:#dbeafe;
-  font-size:12px;
-  font-weight:700;
+  border:1px solid rgba(96,165,250,0.55);
+  background:#101827;
+  color:#60a5fa;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+  box-shadow:0 0 10px rgba(37,99,235,0.18);
 }
 
 .categoryTip:hover::after{
@@ -961,7 +971,7 @@ select{
   left:50%;
   bottom:calc(100% + 8px);
   transform:translateX(-50%);
-  width:220px;
+  width:min(300px, calc(100vw - 32px));
   padding:9px 10px;
   border-radius:8px;
   background:#020617;
@@ -971,6 +981,13 @@ select{
   line-height:1.35;
   z-index:20;
   box-shadow:0 12px 30px rgba(0,0,0,0.45);
+}
+
+.categoryTip:hover{
+  border-color:#facc15;
+  background:#facc15;
+  color:#0f172a;
+  box-shadow:0 0 14px rgba(250,204,21,0.28);
 }
 
 .categorySliderCell{
@@ -1020,6 +1037,12 @@ select{
 
 .versionSectionTitleGroup .categoryTip{
   position:relative;
+}
+
+.versionSectionTitleGroup .categoryTip:hover::after{
+  left:0;
+  transform:none;
+  bottom:calc(100% + 8px);
 }
 
 .versionSectionTitle,
@@ -2101,8 +2124,9 @@ button:disabled{
   }
 
   .categoryTip{
-    width:20px;
-    height:20px;
+    width:22px;
+    height:22px;
+    min-width:22px;
   }
 
   .categorySliderCell{
