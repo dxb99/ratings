@@ -763,8 +763,14 @@ select{
 }
 
 .v1Header .categoryTip:hover::after{
-  top:calc(100% + 8px);
-  bottom:auto;
+  top:auto;
+  bottom:calc(100% + 8px);
+  left:0;
+  transform:none;
+  white-space:nowrap;
+  width:max-content;
+  max-width:calc(100vw - 32px);
+  background:#020617;
 }
 
 .v2Header,
