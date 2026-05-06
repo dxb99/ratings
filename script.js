@@ -1313,11 +1313,11 @@ function renderVersion2Rows(){
     section.dataset.field = mode.key;
     section.innerHTML = `
       <div class="version2ModeHeader">
-        <div>
+        <div class="versionSectionTitleGroup">
           <span class="version2ModeTitle">${mode.label}</span>
+          <span class="categoryTip" data-tip="${mode.tip}">?</span>
           <span class="version2ModeRange">0-10</span>
         </div>
-        <span class="categoryTip" data-tip="${mode.tip}">?</span>
       </div>
       <div class="version2ModePlayers"></div>
     `;
@@ -1461,11 +1461,11 @@ function renderVersion3Rows(){
     section.dataset.category = category.key;
     section.innerHTML = `
       <div class="version3CategoryHeader">
-        <div>
+        <div class="versionSectionTitleGroup">
           <span class="version3CategoryTitle">${category.label}</span>
+          <span class="categoryTip" data-tip="${category.tip}">?</span>
           <span class="version3CategoryRange">0-10</span>
         </div>
-        <span class="categoryTip" data-tip="${category.tip}">?</span>
       </div>
       <div class="version3CategoryPlayers"></div>
     `;
