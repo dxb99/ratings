@@ -1756,6 +1756,12 @@ button:disabled{
     display:none;
   }
 
+  #version1Tab .ratingTableHeader{
+    display:grid;
+    min-height:46px;
+    padding:10px 14px;
+  }
+
   .ratingRow{
     align-items:stretch;
     gap:16px;
