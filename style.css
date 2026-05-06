@@ -312,6 +312,7 @@ main{
   font-size:13px;
   font-weight:800;
   line-height:1;
+  text-transform:none;
   box-shadow:0 0 10px rgba(37,99,235,0.18);
 }
 
@@ -975,6 +976,7 @@ select{
   font-size:13px;
   font-weight:800;
   line-height:1;
+  text-transform:none;
   box-shadow:0 0 10px rgba(37,99,235,0.18);
 }
 
