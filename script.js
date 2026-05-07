@@ -1061,25 +1061,30 @@ function renderStatus(){
         <div class="statusMetric" data-label="V3 Updates">${status.v3Updates || 0}</div>
         <div class="statusMetric" data-label="V3 Clears">${status.v3Clears || 0}</div>
         <div class="mobileStatusMatrix">
-          <div></div>
-          <div>Saved</div>
-          <div>Updates</div>
-          <div>Clears</div>
-
-          <div>V1</div>
-          <div>${formatStatusBadge(!!status.v1Voted)}</div>
-          <div>${status.v1Updates || 0}</div>
-          <div>${status.v1Clears || 0}</div>
-
-          <div>V2</div>
-          <div>${formatStatusBadge(!!status.v2Voted)}</div>
-          <div>${status.v2Updates || 0}</div>
-          <div>${status.v2Clears || 0}</div>
-
-          <div>V3</div>
-          <div>${formatStatusBadge(!!status.v3Voted)}</div>
-          <div>${status.v3Updates || 0}</div>
-          <div>${status.v3Clears || 0}</div>
+          <div class="mobileMatrixLine mobileMatrixHead">
+            <span></span>
+            <span>Saved</span>
+            <span>Updates</span>
+            <span>Clears</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V1</span>
+            <span>${formatStatusBadge(!!status.v1Voted)}</span>
+            <span>${status.v1Updates || 0}</span>
+            <span>${status.v1Clears || 0}</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V2</span>
+            <span>${formatStatusBadge(!!status.v2Voted)}</span>
+            <span>${status.v2Updates || 0}</span>
+            <span>${status.v2Clears || 0}</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V3</span>
+            <span>${formatStatusBadge(!!status.v3Voted)}</span>
+            <span>${status.v3Updates || 0}</span>
+            <span>${status.v3Clears || 0}</span>
+          </div>
         </div>
       `;
       container.appendChild(row);
@@ -2042,25 +2047,30 @@ function renderResults(){
         <div class="resultsMetric" data-label="V3 Median">${formatScore(player.v3Med)}</div>
         <div class="resultsMetric" data-label="V3 Weighted">${formatScore(player.weighted)}</div>
         <div class="mobileResultsMatrix">
-          <div></div>
-          <div>AVG</div>
-          <div>MED</div>
-          <div>WEIGHTED</div>
-
-          <div>V1</div>
-          <div>${formatScore(player.v1Avg)}</div>
-          <div>${formatScore(player.v1Med)}</div>
-          <div>-</div>
-
-          <div>V2</div>
-          <div>${formatScore(player.v2Avg)}</div>
-          <div>${formatScore(player.v2Med)}</div>
-          <div>-</div>
-
-          <div>V3</div>
-          <div>${formatScore(player.v3Avg)}</div>
-          <div>${formatScore(player.v3Med)}</div>
-          <div>${formatScore(player.weighted)}</div>
+          <div class="mobileMatrixLine mobileMatrixHead">
+            <span></span>
+            <span>AVG</span>
+            <span>MED</span>
+            <span>Weighted</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V1</span>
+            <span>${formatScore(player.v1Avg)}</span>
+            <span>${formatScore(player.v1Med)}</span>
+            <span>-</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V2</span>
+            <span>${formatScore(player.v2Avg)}</span>
+            <span>${formatScore(player.v2Med)}</span>
+            <span>-</span>
+          </div>
+          <div class="mobileMatrixLine">
+            <span>V3</span>
+            <span>${formatScore(player.v3Avg)}</span>
+            <span>${formatScore(player.v3Med)}</span>
+            <span>${formatScore(player.weighted)}</span>
+          </div>
         </div>
       `;
       container.appendChild(row);
