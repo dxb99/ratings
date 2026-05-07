@@ -1506,6 +1506,11 @@ button:disabled{
   display:none;
 }
 
+.resultsRow > .mobileResultsMatrix,
+.statusRow > .mobileStatusMatrix{
+  display:none;
+}
+
 .resultsPlayer{
   font-weight:800;
   color:#ffffff;
@@ -2054,82 +2059,6 @@ button:disabled{
     min-width:38px;
     min-height:23px;
     font-size:10px;
-  }
-}
-
-@media(min-width:641px) and (max-width:980px) and (orientation:portrait){
-  .resultsHeader,
-  .statusHeader{
-    display:grid;
-  }
-
-  .mobileResultsSort{
-    display:none;
-  }
-
-  .resultsHeader,
-  .resultsRow{
-    grid-template-columns:minmax(150px, 1.35fr) repeat(7, minmax(96px, 1fr));
-    min-width:860px;
-    column-gap:0;
-  }
-
-  .statusHeader,
-  .statusRow{
-    grid-template-columns:minmax(150px, 1.25fr) minmax(120px, 1fr) repeat(9, minmax(76px, 0.8fr));
-    min-width:940px;
-    column-gap:0;
-  }
-
-  .resultsRow,
-  .statusRow{
-    margin:0;
-    border:none;
-    border-radius:0;
-    gap:0;
-    background:var(--ratings-row-bg);
-  }
-
-  .resultsRow{
-    min-height:54px;
-    padding:0 18px;
-  }
-
-  .statusRow{
-    min-height:56px;
-    padding:0;
-  }
-
-  .resultsRow > div,
-  .statusRow > div{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:0 8px;
-    border-bottom:none;
-  }
-
-  .resultsRow > div::before,
-  .statusRow > div::before{
-    content:none;
-  }
-
-  .resultsRow > .resultsPlayer,
-  .statusRow > .statusPlayer{
-    justify-content:flex-start;
-    text-align:left;
-    padding-left:18px;
-  }
-
-  .resultsRow > .resultsMetric,
-  .statusRow > .statusMetric{
-    display:flex;
-  }
-
-  .resultsRow > .mobileResultsMatrix,
-  .statusRow > .mobileStatusMatrix{
-    display:none;
   }
 }
 
