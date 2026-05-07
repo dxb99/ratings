@@ -1889,6 +1889,7 @@ button:disabled{
 
   .statusRow > div:last-child{
     border-bottom:none;
+    padding-right:0;
   }
 
   .statusRow > div::before{
