@@ -1501,6 +1501,11 @@ button:disabled{
   text-align:left;
 }
 
+.mobileResultsMatrix,
+.mobileStatusMatrix{
+  display:none;
+}
+
 .resultsPlayer{
   font-weight:800;
   color:#ffffff;
@@ -1867,6 +1872,54 @@ button:disabled{
     font-weight:700;
   }
 
+  .resultsRow > .resultsMetric{
+    display:none;
+  }
+
+  .mobileResultsMatrix{
+    display:grid;
+    grid-template-columns:0.55fr repeat(3, 1fr);
+    gap:0;
+    margin-top:4px;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  .mobileResultsMatrix > div{
+    min-height:34px;
+    padding:7px 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-right:1px solid rgba(255,255,255,0.06);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    color:#e2e8f0;
+    font-size:12px;
+    font-weight:800;
+    text-align:center;
+  }
+
+  .mobileResultsMatrix > div::before{
+    content:none;
+  }
+
+  .mobileResultsMatrix > div:nth-child(4n){
+    border-right:none;
+  }
+
+  .mobileResultsMatrix > div:nth-last-child(-n+4){
+    border-bottom:none;
+  }
+
+  .mobileResultsMatrix > div:nth-child(-n+4),
+  .mobileResultsMatrix > div:nth-child(4n+1){
+    color:#94a3b8;
+    background:rgba(15,23,42,0.58);
+    text-transform:uppercase;
+    letter-spacing:0.25px;
+  }
+
   .statusRow{
     grid-template-columns:1fr;
     min-width:0;
@@ -1905,6 +1958,60 @@ button:disabled{
     justify-content:space-between;
     padding-left:0;
     text-align:right;
+  }
+
+  .statusRow > .statusMetric{
+    display:none;
+  }
+
+  .mobileStatusMatrix{
+    display:grid;
+    grid-template-columns:0.55fr repeat(3, 1fr);
+    gap:0;
+    margin-top:4px;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  .mobileStatusMatrix > div{
+    min-height:34px;
+    padding:7px 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-right:1px solid rgba(255,255,255,0.06);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    color:#e2e8f0;
+    font-size:12px;
+    font-weight:800;
+    text-align:center;
+  }
+
+  .mobileStatusMatrix > div::before{
+    content:none;
+  }
+
+  .mobileStatusMatrix > div:nth-child(4n){
+    border-right:none;
+  }
+
+  .mobileStatusMatrix > div:nth-last-child(-n+4){
+    border-bottom:none;
+  }
+
+  .mobileStatusMatrix > div:nth-child(-n+4),
+  .mobileStatusMatrix > div:nth-child(4n+1){
+    color:#94a3b8;
+    background:rgba(15,23,42,0.58);
+    text-transform:uppercase;
+    letter-spacing:0.25px;
+  }
+
+  .mobileStatusMatrix .statusBadge{
+    min-width:38px;
+    min-height:23px;
+    font-size:10px;
   }
 }
 
