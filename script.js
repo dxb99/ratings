@@ -326,7 +326,7 @@ function showTab(tabId){
   }
 
   if(tabId === "statusTab"){
-    refreshStatus();
+    renderStatus();
   }
 }
 
