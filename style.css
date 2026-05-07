@@ -655,8 +655,8 @@ main{
   height:38px;
   box-sizing:border-box;
   border-radius:9px;
-  border:1px solid rgba(255,255,255,0.14);
-  background:#0f172a;
+  border:1px solid rgba(96,165,250,0.62);
+  background:#111827;
   color:#ffffff;
   padding:0 12px;
   text-align:center;
@@ -675,10 +675,17 @@ label{
 
 select,
 input[type="number"]{
-  border:1px solid rgba(255,255,255,0.14);
+  border:1px solid rgba(96,165,250,0.62);
   border-radius:8px;
-  background:#05070c;
+  background:#111827;
   color:#ffffff;
+}
+
+select:focus,
+input[type="number"]:focus,
+.verificationCodeInput:focus{
+  outline:none;
+  border-color:#facc15;
 }
 
 select{
@@ -2475,6 +2482,12 @@ button:disabled{
   #resultsTab .applyRatingsControls select,
   #resultsTab .applyRatingsControls .smallBtn{
     height:40px;
+  }
+
+  .raterSelect,
+  .verificationCodeInput{
+    min-height:46px;
+    font-size:16px;
   }
 
   .versionLaunch{
