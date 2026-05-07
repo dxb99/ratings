@@ -840,6 +840,10 @@ select{
 }
 
 .selfBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
   padding:3px 7px;
   border-radius:999px;
   background:rgba(250,204,21,0.15);
@@ -847,6 +851,11 @@ select{
   border:1px solid rgba(250,204,21,0.45);
   font-size:10px;
   font-weight:700;
+  line-height:1;
+}
+
+.version3CategoryPlayerRow .selfBadge{
+  min-height:20px;
 }
 
 .sliderCell{
@@ -1111,6 +1120,16 @@ select{
 }
 
 .untouched{
+  filter:grayscale(1);
+  opacity:0.72;
+}
+
+.version3CategoryPlayerRow.untouched{
+  filter:none;
+  opacity:1;
+}
+
+.version3CategoryPlayerRow.untouched .categorySliderCell{
   filter:grayscale(1);
   opacity:0.72;
 }
@@ -2593,6 +2612,13 @@ button:disabled{
   .version2ModePlayerRow .playerCell,
   .version3CategoryPlayerRow .playerCell{
     padding-bottom:2px;
+  }
+
+  .version3CategoryPlayerRow .playerCell{
+    display:grid;
+    grid-template-columns:28px minmax(0, 1fr) auto;
+    align-items:center;
+    gap:8px;
   }
 
   .categorySliderCell{
