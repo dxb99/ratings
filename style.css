@@ -655,9 +655,9 @@ main{
   height:38px;
   box-sizing:border-box;
   border-radius:9px;
-  border:1px solid rgba(96,165,250,0.62);
-  background:#111827;
-  color:#ffffff;
+  border:1px solid rgba(96,165,250,0.85);
+  background:#ffffff;
+  color:#111827;
   padding:0 12px;
   text-align:center;
   font:inherit;
@@ -675,10 +675,10 @@ label{
 
 select,
 input[type="number"]{
-  border:1px solid rgba(96,165,250,0.62);
+  border:1px solid rgba(96,165,250,0.85);
   border-radius:8px;
-  background:#111827;
-  color:#ffffff;
+  background:#ffffff;
+  color:#111827;
 }
 
 select:focus,
