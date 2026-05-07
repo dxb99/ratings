@@ -1876,44 +1876,59 @@ button:disabled{
     display:none;
   }
 
-  .mobileResultsMatrix{
-    display:grid;
-    grid-template-columns:0.55fr repeat(3, 1fr);
+  .resultsRow > .mobileResultsMatrix{
+    display:flex;
+    flex-direction:column;
     gap:0;
+    width:100%;
     margin-top:4px;
+    padding:0;
     border:1px solid rgba(255,255,255,0.08);
+    border-bottom:1px solid rgba(255,255,255,0.08);
     border-radius:10px;
     overflow:hidden;
+    justify-content:stretch;
+    text-align:center;
   }
 
-  .mobileResultsMatrix > div{
+  .resultsRow > .mobileResultsMatrix::before{
+    content:none;
+  }
+
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine{
+    display:grid;
+    grid-template-columns:0.58fr repeat(3, 1fr);
     min-height:34px;
-    padding:7px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine::before{
+    content:none;
+  }
+
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine:last-child{
+    border-bottom:none;
+  }
+
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine > span{
+    min-width:0;
+    padding:8px 6px;
     display:flex;
     align-items:center;
     justify-content:center;
     border-right:1px solid rgba(255,255,255,0.06);
-    border-bottom:1px solid rgba(255,255,255,0.06);
     color:#e2e8f0;
     font-size:12px;
     font-weight:800;
     text-align:center;
   }
 
-  .mobileResultsMatrix > div::before{
-    content:none;
-  }
-
-  .mobileResultsMatrix > div:nth-child(4n){
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine > span:last-child{
     border-right:none;
   }
 
-  .mobileResultsMatrix > div:nth-last-child(-n+4){
-    border-bottom:none;
-  }
-
-  .mobileResultsMatrix > div:nth-child(-n+4),
-  .mobileResultsMatrix > div:nth-child(4n+1){
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixHead > span,
+  .resultsRow > .mobileResultsMatrix > .mobileMatrixLine > span:first-child{
     color:#94a3b8;
     background:rgba(15,23,42,0.58);
     text-transform:uppercase;
@@ -1964,51 +1979,66 @@ button:disabled{
     display:none;
   }
 
-  .mobileStatusMatrix{
-    display:grid;
-    grid-template-columns:0.55fr repeat(3, 1fr);
+  .statusRow > .mobileStatusMatrix{
+    display:flex;
+    flex-direction:column;
     gap:0;
+    width:100%;
     margin-top:4px;
+    padding:0;
     border:1px solid rgba(255,255,255,0.08);
+    border-bottom:1px solid rgba(255,255,255,0.08);
     border-radius:10px;
     overflow:hidden;
+    justify-content:stretch;
+    text-align:center;
   }
 
-  .mobileStatusMatrix > div{
+  .statusRow > .mobileStatusMatrix::before{
+    content:none;
+  }
+
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine{
+    display:grid;
+    grid-template-columns:0.58fr repeat(3, 1fr);
     min-height:34px;
-    padding:7px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine::before{
+    content:none;
+  }
+
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine:last-child{
+    border-bottom:none;
+  }
+
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine > span{
+    min-width:0;
+    padding:8px 6px;
     display:flex;
     align-items:center;
     justify-content:center;
     border-right:1px solid rgba(255,255,255,0.06);
-    border-bottom:1px solid rgba(255,255,255,0.06);
     color:#e2e8f0;
     font-size:12px;
     font-weight:800;
     text-align:center;
   }
 
-  .mobileStatusMatrix > div::before{
-    content:none;
-  }
-
-  .mobileStatusMatrix > div:nth-child(4n){
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine > span:last-child{
     border-right:none;
   }
 
-  .mobileStatusMatrix > div:nth-last-child(-n+4){
-    border-bottom:none;
-  }
-
-  .mobileStatusMatrix > div:nth-child(-n+4),
-  .mobileStatusMatrix > div:nth-child(4n+1){
+  .statusRow > .mobileStatusMatrix > .mobileMatrixHead > span,
+  .statusRow > .mobileStatusMatrix > .mobileMatrixLine > span:first-child{
     color:#94a3b8;
     background:rgba(15,23,42,0.58);
     text-transform:uppercase;
     letter-spacing:0.25px;
   }
 
-  .mobileStatusMatrix .statusBadge{
+  .statusRow > .mobileStatusMatrix .statusBadge{
     min-width:38px;
     min-height:23px;
     font-size:10px;
