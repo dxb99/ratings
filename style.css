@@ -656,7 +656,7 @@ main{
   box-sizing:border-box;
   border-radius:9px;
   border:1px solid rgba(96,165,250,0.85);
-  background:#ffffff;
+  background:#e5e7eb;
   color:#111827;
   padding:0 12px;
   text-align:center;
@@ -677,7 +677,7 @@ select,
 input[type="number"]{
   border:1px solid rgba(96,165,250,0.85);
   border-radius:8px;
-  background:#ffffff;
+  background:#e5e7eb;
   color:#111827;
 }
 
