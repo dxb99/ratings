@@ -799,6 +799,11 @@ select{
   border-bottom:none;
 }
 
+.ratingRows .ratingRow:last-child{
+  border-bottom-left-radius:16px;
+  border-bottom-right-radius:16px;
+}
+
 .playerCell{
   display:flex;
   align-items:center;
